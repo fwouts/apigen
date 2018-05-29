@@ -1,4 +1,4 @@
-require './apigen/util'
+require './lib/apigen/util'
 
 module Apigen
   class ModelRegistry

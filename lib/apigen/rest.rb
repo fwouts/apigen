@@ -1,5 +1,5 @@
-require './apigen/model'
-require './apigen/util'
+require './lib/apigen/model'
+require './lib/apigen/util'
 
 module Apigen
   module Rest

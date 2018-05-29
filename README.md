@@ -1,3 +1,14 @@
+# OpenAPI spec generator for Ruby
+
+`apigen` is a Ruby gem you can use to generate a valid OpenAPI spec in Ruby.
+
+## Warning!
+This is a brand new project and isn't yet functional. The syntax may change and
+the gem doesn't yet generate an OpenAPI spec.
+
+## Example
+
+```ruby
 require 'apigen/rest'
 
 # Start an API declaration.
@@ -52,3 +63,4 @@ api.validate
 
 # Show a summary of the API.
 puts api
+```
