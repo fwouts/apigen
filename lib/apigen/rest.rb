@@ -38,16 +38,16 @@ module Apigen
 
       ##
       # Declares a specific endpoint.
-      def endpoint &block
-        endpoint = Endpoint.new
+      def endpoint name, &block
+        endpoint = Endpoint.new name
         @endpoints << endpoint
         endpoint.instance_eval &block
       end
 
       ##
       # Declares a data model.
-      def model &block
-        @model_registry.model &block
+      def model name, &block
+        @model_registry.model name, &block
       end
 
       def validate
@@ -71,8 +71,8 @@ module Apigen
       attribute_setter :path
       attribute_setter :input
 
-      def initialize
-        @name = nil
+      def initialize name
+        @name = name
         @path = nil
         @input = nil
         @outputs = []
@@ -88,7 +88,7 @@ module Apigen
       end
 
       def validate model_registry
-        raise "Use `name :endpoint_name` to declare each endpoint." unless @name
+        raise "One of the endpoints is missing a name." unless @name
         raise "Use `path \"/some/path\"` to assign a path to :#{@name}." unless @path
         raise "Use `input :typename` to assign an input type to :#{@name}." unless @input
         raise "Endpoint :#{@name} does not declare any outputs" unless @outputs.length > 0

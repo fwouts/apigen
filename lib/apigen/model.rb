@@ -6,8 +6,8 @@ module Apigen
       @models = {}
     end
 
-    def model &block
-      model = Apigen::Model.new
+    def model name, &block
+      model = Apigen::Model.new name
       model.instance_eval &block
       raise "Use `name :model_name` to declare each model." unless model.name
       @models[model.name] = model
@@ -46,8 +46,8 @@ module Apigen
   class Model
     attribute_setter_getter :name
 
-    def initialize
-      @name = nil
+    def initialize name
+      @name = name
       @type = nil
     end
 
@@ -88,7 +88,7 @@ module Apigen
     end
 
     def validate model_registry
-      raise "Use `name :model_name` to declare each model." unless @name
+      raise "One of the models is missing a name." unless @name
       raise "Use `type :model_type [block]` to assign a type to :#{@name}." unless @type
       model_registry.check_type @type
     end

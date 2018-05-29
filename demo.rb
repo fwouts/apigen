@@ -5,8 +5,7 @@ api = Apigen::Rest::Api.new
 
 # Declare a REST endpoint /users/:id which takes no input
 # and returns either a User or a failure.
-api.endpoint do
-  name :get_user
+api.endpoint :get_user do
   path "/users/:id"
   input :void
   output :success do
@@ -20,9 +19,7 @@ api.endpoint do
 end
 
 # Declare what a User is.
-api.model do
-  name :user
-
+api.model :user do
   # User is a struct (multiple fields).
   type :struct do
     # User.name is a mandatory string.
@@ -41,8 +38,7 @@ api.model do
   end
 end
 
-api.model do
-  name :birthdate
+api.model :birthdate do
   type :string
 end
 
