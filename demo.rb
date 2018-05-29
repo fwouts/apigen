@@ -9,13 +9,11 @@ api.endpoint do
   name :get_user
   path "/users/:id"
   input :void
-  output do
-    is :success
+  output :success do
     status 200
     type :user
   end
-  output do
-    is :failure
+  output :failure do
     status 401
     type :string
   end

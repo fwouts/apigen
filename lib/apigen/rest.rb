@@ -13,13 +13,11 @@ module Apigen
     #      name :get_user
     #      path "/users/:id"
     #      input :void
-    #      output do
-    #        is :success
+    #      output :success do
     #        status 200
     #        type :user
     #      end
-    #      output do
-    #        is :failure
+    #      output :failure do
     #        status 401
     #        type :string
     #      end
@@ -82,8 +80,8 @@ module Apigen
 
       ##
       # Declares the output of an endpoint for a given status code.
-      def output(&block)
-        output = Output.new
+      def output(name, &block)
+        output = Output.new name
         @outputs << output
         output.instance_eval &block
         output
@@ -109,24 +107,23 @@ module Apigen
     end
 
     class Output
-      attribute_setter :is
       attribute_setter :status
       attribute_setter :type
 
-      def initialize
-        @is = nil
+      def initialize(name)
+        @name = name
         @status = nil
         @type = nil
       end
 
       def validate
-        raise "Use `is :name` to name each output." unless @is
+        raise "One of the outputs is missing a name." unless @name
         raise "Use `status [code]` to assign a status code to :#{@is}." unless @status
         raise "Use `type :typename` to assign a type to :#{@is}." unless @type
       end
 
       def to_s
-        "#{@is} #{@status} #{@type}"
+        "#{@name} #{@status} #{@type}"
       end
     end
   end
