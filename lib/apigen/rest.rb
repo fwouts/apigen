@@ -69,13 +69,18 @@ module Apigen
     class Endpoint
       attribute_setter :name
       attribute_setter :path
-      attribute_setter :input
 
       def initialize name
         @name = name
         @path = nil
         @input = nil
         @outputs = []
+      end
+
+      ##
+      # Declares the input type of an endpoint.
+      def input shape, &block
+        @input = Apigen::Model.type shape, &block
       end
 
       ##

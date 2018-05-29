@@ -38,7 +38,7 @@ module Apigen
 
     def to_s
       @models.map { |key, model|
-        "#{key}: #{model.repr}"
+        "#{key}: #{model}"
       }.join "\n"
     end
   end
@@ -93,12 +93,8 @@ module Apigen
       model_registry.check_type @type
     end
 
-    def repr
-      if @type.respond_to? :repr
-        @type.repr ""
-      else
-        @type.to_s
-      end
+    def to_s
+      @type.to_s
     end
   end
 
@@ -117,6 +113,10 @@ module Apigen
       @fields.each do |key, type|
         model_registry.check_type type
       end
+    end
+
+    def to_s
+      repr ""
     end
 
     def repr indent
@@ -148,6 +148,10 @@ module Apigen
       model_registry.check_type @item
     end
 
+    def to_s
+      repr ""
+    end
+
     def repr indent
       if @item.respond_to? :repr
         item_repr = @item.repr indent
@@ -170,6 +174,10 @@ module Apigen
     def validate model_registry
       raise "Use `type [typename]` to specify an optional type." unless @type
       model_registry.check_type @type
+    end
+
+    def to_s
+      repr ""
     end
 
     def repr indent
