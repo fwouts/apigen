@@ -6,7 +6,7 @@ module Apigen
       @models = {}
     end
 
-    def model(&block)
+    def model &block
       model = Apigen::Model.new
       model.instance_eval &block
       raise "Use `name :model_name` to declare each model." unless model.name
@@ -19,7 +19,7 @@ module Apigen
       end
     end
 
-    def check_type(type)
+    def check_type type
       if type.is_a? Symbol
         case type
         when :string, :int32, :bool, :void
@@ -51,7 +51,7 @@ module Apigen
       @type = nil
     end
 
-    def type(shape, &block)
+    def type shape, &block
       case shape
       when :struct
         struct = Struct.new
@@ -70,13 +70,13 @@ module Apigen
       end
     end
 
-    def validate(model_registry)
+    def validate model_registry
       raise "Use `name :model_name` to declare each model." unless @name
       raise "Use `type :model_type [block]` to assign a type to :#{@name}." unless @type
       @type.validate model_registry
     end
 
-    def repr(indent = "")
+    def repr indent = ""
       @type.repr indent
     end
 
@@ -85,7 +85,7 @@ module Apigen
         @fields = {}
       end
 
-      def method_missing(field_name, *args, &block)
+      def method_missing field_name, *args, &block
         raise "Field :#{field_name} is defined multiple times." unless not @fields.key? field_name
         field_type = args[0]
         if block_given?
@@ -98,13 +98,13 @@ module Apigen
         end
       end
 
-      def validate(model_registry)
+      def validate model_registry
         @fields.each do |key, type|
           model_registry.check_type type
         end
       end
 
-      def repr(indent)
+      def repr indent
         repr = "{"
         @fields.each do |key, type|
           if type.is_a? Model
@@ -124,7 +124,7 @@ module Apigen
         @item = nil
       end
 
-      def item(item_type, &block)
+      def item item_type, &block
         if block_given?
           item_model = Apigen::Model.new
           item_model.name "#{@name}.item".to_sym
@@ -135,12 +135,12 @@ module Apigen
         end
       end
 
-      def validate(model_registry)
+      def validate model_registry
         raise "Use `item [typename]` to specify the type of items in a list." unless @item
         model_registry.check_type @item
       end
 
-      def repr(indent)
+      def repr indent
         if @item.is_a? Model
           item_repr = @item.repr indent
         else
@@ -155,7 +155,7 @@ module Apigen
         @type = nil
       end
 
-      def type(item_type, &block)
+      def type item_type, &block
         if block_given?
           item_model = Apigen::Model.new
           item_model.name "#{@name}.item".to_sym
@@ -166,12 +166,12 @@ module Apigen
         end
       end
 
-      def validate(model_registry)
+      def validate model_registry
         raise "Use `type [typename]` to specify an optional type." unless @type
         model_registry.check_type @type
       end
 
-      def repr(indent)
+      def repr indent
         if @type.is_a? Model
           type_repr = @type.repr indent
         else

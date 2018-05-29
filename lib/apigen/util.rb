@@ -4,12 +4,12 @@
 # Unlike attribute_writer, the setter method has no equal sign.
 #  attribute_setter :name
 # is equivalent to:
-#  def name(value)
+#  def name value
 #    @name = value
 #  end
-def attribute_setter(attribute)
-  define_method("#{attribute}".to_sym) do |value|
-    instance_variable_set("@#{attribute}", value)
+def attribute_setter attribute
+  define_method "#{attribute}".to_sym do |value|
+    instance_variable_set "@#{attribute}", value
   end
 end
 
@@ -18,19 +18,19 @@ end
 #
 #  attribute_setter_getter :name
 # is equivalent to:
-#  def name(value = nil)
+#  def name value = nil
 #    if value.nil?
 #      @name
 #    else
 #      @name = value
 #    end
 #  end
-def attribute_setter_getter(attribute)
-  define_method("#{attribute}".to_sym) do |value = nil|
+def attribute_setter_getter attribute
+  define_method "#{attribute}".to_sym do |value = nil|
     if value.nil?
-      instance_variable_get("@#{attribute}")
+      instance_variable_get "@#{attribute}"
     else
-      instance_variable_set("@#{attribute}", value)
+      instance_variable_set "@#{attribute}", value
     end
   end
 end

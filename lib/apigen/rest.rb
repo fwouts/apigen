@@ -23,7 +23,7 @@ module Apigen
     #      end
     #    end
     #  end
-    def self.api(&block)
+    def self.api &block
       api = Api.new
       api.instance_eval &block
       api.validate
@@ -38,7 +38,7 @@ module Apigen
 
       ##
       # Declares a specific endpoint.
-      def endpoint(&block)
+      def endpoint &block
         endpoint = Endpoint.new
         @endpoints << endpoint
         endpoint.instance_eval &block
@@ -46,7 +46,7 @@ module Apigen
 
       ##
       # Declares a data model.
-      def model(&block)
+      def model &block
         @model_registry.model &block
       end
 
@@ -80,14 +80,14 @@ module Apigen
 
       ##
       # Declares the output of an endpoint for a given status code.
-      def output(name, &block)
+      def output name, &block
         output = Output.new name
         @outputs << output
         output.instance_eval &block
         output
       end
 
-      def validate(model_registry)
+      def validate model_registry
         raise "Use `name :endpoint_name` to declare each endpoint." unless @name
         raise "Use `path \"/some/path\"` to assign a path to :#{@name}." unless @path
         raise "Use `input :typename` to assign an input type to :#{@name}." unless @input
@@ -111,13 +111,13 @@ module Apigen
       attribute_setter :status
       attribute_setter :type
 
-      def initialize(name)
+      def initialize name
         @name = name
         @status = nil
         @type = nil
       end
 
-      def validate(model_registry)
+      def validate model_registry
         raise "One of the outputs is missing a name." unless @name
         raise "Use `status [code]` to assign a status code to :#{@is}." unless @status
         raise "Use `type :typename` to assign a type to :#{@is}." unless @type
