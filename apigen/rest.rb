@@ -1,3 +1,4 @@
+require './apigen/model'
 require './apigen/util'
 
 module Apigen
@@ -34,6 +35,7 @@ module Apigen
     class Api
       def initialize
         @endpoints = []
+        @model_registry = Apigen::ModelRegistry.new
       end
 
       ##
@@ -44,14 +46,25 @@ module Apigen
         endpoint.instance_eval &block
       end
 
+      ##
+      # Declares a data model.
+      def model(&block)
+        @model_registry.model &block
+      end
+
       def validate
         for e in @endpoints do
           e.validate
         end
+        @model_registry.validate
       end
 
       def to_s
-        @endpoints.map{ |e| e.to_s }.join "\n"
+        repr = "Endpoints:\n\n"
+        repr += @endpoints.map{ |e| e.to_s }.join "\n"
+        repr += "\n\nTypes:\n\n"
+        repr += @model_registry.to_s
+        repr
       end
     end
 
