@@ -29,7 +29,7 @@ module Apigen
             raise "Unknown type :#{type}."
           end
         end
-      elsif type.is_a? Model
+      elsif type.is_a? Struct or type.is_a? List or type.is_a? Optional
         type.validate self
       else
         raise "Cannot process type for key :#{key}"
@@ -52,133 +52,133 @@ module Apigen
     end
 
     def type shape, &block
+      @type = Model.type shape, &block
+    end
+
+    def self.type shape, &block
+      if shape.to_s.end_with? "?"
+        shape = shape[0..-2].to_sym
+        optional = true
+      else
+        optional = false
+      end
       case shape
       when :struct
         struct = Struct.new
         struct.instance_eval &block
-        @type = struct
+        type = struct
       when :list
         list = List.new
         list.instance_eval &block
-        @type = list
+        type = list
       when :optional
         optional = Optional.new
         optional.instance_eval &block
-        @type = optional
+        type = optional
       else
-        raise "Unknown model type: #{shape}."
+        type = shape
+      end
+      if optional
+        optional_type = Optional.new
+        optional_type.type type
+        optional_type
+      else
+        type
       end
     end
 
     def validate model_registry
       raise "Use `name :model_name` to declare each model." unless @name
       raise "Use `type :model_type [block]` to assign a type to :#{@name}." unless @type
-      @type.validate model_registry
+      model_registry.check_type @type
     end
 
-    def repr indent = ""
-      @type.repr indent
+    def repr
+      if @type.respond_to? :repr
+        @type.repr ""
+      else
+        @type.to_s
+      end
+    end
+  end
+
+  class Struct
+    def initialize
+      @fields = {}
     end
 
-    class Struct
-      def initialize
-        @fields = {}
-      end
+    def method_missing field_name, *args, &block
+      raise "Field :#{field_name} is defined multiple times." unless not @fields.key? field_name
+      field_type = args[0]
+      @fields[field_name] = Apigen::Model.type field_type, &block
+    end
 
-      def method_missing field_name, *args, &block
-        raise "Field :#{field_name} is defined multiple times." unless not @fields.key? field_name
-        field_type = args[0]
-        if block_given?
-          field_model = Apigen::Model.new
-          field_model.name "#{@name}.#{field_name}".to_sym
-          field_model.type field_type, &block
-          @fields[field_name] = field_model
-        else
-          @fields[field_name] = field_type
-        end
-      end
-
-      def validate model_registry
-        @fields.each do |key, type|
-          model_registry.check_type type
-        end
-      end
-
-      def repr indent
-        repr = "{"
-        @fields.each do |key, type|
-          if type.is_a? Model
-            type_repr = type.repr (indent + "  ")
-          else
-            type_repr = type.to_s
-          end
-          repr += "\n#{indent}  #{key}: #{type_repr}"
-        end
-        repr += "\n#{indent}}"
-        repr
+    def validate model_registry
+      @fields.each do |key, type|
+        model_registry.check_type type
       end
     end
 
-    class List
-      def initialize
-        @item = nil
-      end
-
-      def item item_type, &block
-        if block_given?
-          item_model = Apigen::Model.new
-          item_model.name "#{@name}.item".to_sym
-          item_model.type item_type, &block
-          @item = item_model
+    def repr indent
+      repr = "{"
+      @fields.each do |key, type|
+        if type.respond_to? :repr
+          type_repr = type.repr (indent + "  ")
         else
-          @item = item_type
+          type_repr = type.to_s
         end
+        repr += "\n#{indent}  #{key}: #{type_repr}"
       end
+      repr += "\n#{indent}}"
+      repr
+    end
+  end
 
-      def validate model_registry
-        raise "Use `item [typename]` to specify the type of items in a list." unless @item
-        model_registry.check_type @item
-      end
-
-      def repr indent
-        if @item.is_a? Model
-          item_repr = @item.repr indent
-        else
-          item_repr = @item.to_s
-        end
-        "List<#{item_repr}>"
-      end
+  class List
+    def initialize
+      @item = nil
     end
 
-    class Optional
-      def initialize
-        @type = nil
-      end
+    def item item_type, &block
+      @item = Apigen::Model.type item_type, &block
+    end
 
-      def type item_type, &block
-        if block_given?
-          item_model = Apigen::Model.new
-          item_model.name "#{@name}.item".to_sym
-          item_model.type item_type, &block
-          @type = item_model
-        else
-          @type = item_type
-        end
-      end
+    def validate model_registry
+      raise "Use `item [typename]` to specify the type of items in a list." unless @item
+      model_registry.check_type @item
+    end
 
-      def validate model_registry
-        raise "Use `type [typename]` to specify an optional type." unless @type
-        model_registry.check_type @type
+    def repr indent
+      if @item.respond_to? :repr
+        item_repr = @item.repr indent
+      else
+        item_repr = @item.to_s
       end
+      "List<#{item_repr}>"
+    end
+  end
 
-      def repr indent
-        if @type.is_a? Model
-          type_repr = @type.repr indent
-        else
-          type_repr = @type.to_s
-        end
-        "Optional<#{type_repr}>"
+  class Optional
+    def initialize
+      @type = nil
+    end
+
+    def type item_type, &block
+      @type = Apigen::Model.type item_type, &block
+    end
+
+    def validate model_registry
+      raise "Use `type [typename]` to specify an optional type." unless @type
+      model_registry.check_type @type
+    end
+
+    def repr indent
+      if @type.respond_to? :repr
+        type_repr = @type.repr indent
+      else
+        type_repr = @type.to_s
       end
+      "Optional<#{type_repr}>"
     end
   end
 end

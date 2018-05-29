@@ -28,21 +28,22 @@ api.model do
     # User.name is a mandatory string.
     name :string
     # User.age is an optional integer.
-    age :optional do
-      type :int32
-    end
+    age :int32?
     # User.children is a list of users.
     children :list do
       item :user
     end
     # User.additional_info is an optional struct.
-    additional_info :optional do
-      type :struct do
-        first_name :string
-        last_name :string
-      end
+    additional_info :struct? do
+      first_name :string
+      last_name :string
     end
   end
+end
+
+api.model do
+  name :birthdate
+  type :string
 end
 
 # Ensure that the API spec is valid.
