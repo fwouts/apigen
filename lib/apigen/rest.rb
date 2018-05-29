@@ -94,7 +94,7 @@ module Apigen
         raise "Endpoint :#{@name} does not declare any outputs" unless @outputs.length > 0
         model_registry.check_type @input
         for output in @outputs
-          output.validate
+          output.validate model_registry
         end
       end
 
@@ -117,10 +117,11 @@ module Apigen
         @type = nil
       end
 
-      def validate
+      def validate(model_registry)
         raise "One of the outputs is missing a name." unless @name
         raise "Use `status [code]` to assign a status code to :#{@is}." unless @status
         raise "Use `type :typename` to assign a type to :#{@is}." unless @type
+        model_registry.check_type @type
       end
 
       def to_s

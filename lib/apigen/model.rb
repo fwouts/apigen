@@ -137,9 +137,7 @@ module Apigen
 
       def validate(model_registry)
         raise "Use `item [typename]` to specify the type of items in a list." unless @item
-        if @item.is_a? Model
-          @item.validate model_registry
-        end
+        model_registry.check_type @item
       end
 
       def repr(indent)
@@ -170,9 +168,7 @@ module Apigen
 
       def validate(model_registry)
         raise "Use `type [typename]` to specify an optional type." unless @type
-        if @type.is_a? Model
-          @type.validate model_registry
-        end
+        model_registry.check_type @type
       end
 
       def repr(indent)
