@@ -2,8 +2,6 @@ require './lib/apigen/util'
 
 module Apigen
   class ModelRegistry
-    attr_reader :models
-
     def initialize
       @models = {}
     end
@@ -18,6 +16,23 @@ module Apigen
     def validate
       @models.each do |key, model|
         model.validate self
+      end
+    end
+
+    def check_type(type)
+      if type.is_a? Symbol
+        case type
+        when :string, :int32, :bool, :void
+          # Valid.
+        else
+          if not @models.key? type
+            raise "Unknown type :#{type}."
+          end
+        end
+      elsif type.is_a? Model
+        type.validate self
+      else
+        raise "Cannot process type for key :#{key}"
       end
     end
 
@@ -85,20 +100,7 @@ module Apigen
 
       def validate(model_registry)
         @fields.each do |key, type|
-          if type.is_a? Symbol
-            case type
-            when :string, :int32, :bool
-              # Valid.
-            else
-              if not model_registry.models.key? type
-                raise "Unknown type :#{type}."
-              end
-            end
-          elsif type.is_a? Model
-            type.validate model_registry
-          else
-            raise "Cannot process type for key :#{key}"
-          end
+          model_registry.check_type type
         end
       end
 

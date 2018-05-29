@@ -51,10 +51,10 @@ module Apigen
       end
 
       def validate
-        for e in @endpoints do
-          e.validate
-        end
         @model_registry.validate
+        for e in @endpoints do
+          e.validate @model_registry
+        end
       end
 
       def to_s
@@ -87,11 +87,12 @@ module Apigen
         output
       end
 
-      def validate
+      def validate(model_registry)
         raise "Use `name :endpoint_name` to declare each endpoint." unless @name
         raise "Use `path \"/some/path\"` to assign a path to :#{@name}." unless @path
         raise "Use `input :typename` to assign an input type to :#{@name}." unless @input
         raise "Endpoint :#{@name} does not declare any outputs" unless @outputs.length > 0
+        model_registry.check_type @input
         for output in @outputs
           output.validate
         end
