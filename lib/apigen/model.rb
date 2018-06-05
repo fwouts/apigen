@@ -99,6 +99,8 @@ module Apigen
   end
 
   class Struct
+    attr_reader :fields
+
     def initialize
       @fields = {}
     end
@@ -135,6 +137,8 @@ module Apigen
   end
 
   class List
+    attr_reader :item
+
     def initialize
       @item = nil
     end
@@ -163,6 +167,8 @@ module Apigen
   end
 
   class Optional
+    attr_reader :type
+
     def initialize
       @type = nil
     end

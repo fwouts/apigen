@@ -17,7 +17,9 @@ api = Apigen::Rest::Api.new
 # Declare a REST endpoint /users/:id which takes no input
 # and returns either a User or a failure.
 api.endpoint :get_user do
-  path "/users/:id"
+  path "/users/{id}" do
+    id :string
+  end
   input :void
   output :success do
     status 200

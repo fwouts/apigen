@@ -1,6 +1,8 @@
 require './lib/apigen/model'
 require './lib/apigen/util'
 
+PATH_PARAMETER_REGEX = /\{(\w+)\}/
+
 module Apigen
   module Rest
 
@@ -68,13 +70,34 @@ module Apigen
 
     class Endpoint
       attribute_setter :name
-      attribute_setter :path
 
       def initialize name
         @name = name
         @path = nil
         @input = nil
         @outputs = []
+      end
+
+      #
+      # Declares the endpoint path relative to the host.
+      def path path, &block
+        @path = path
+        if PATH_PARAMETER_REGEX.match path
+          raise "URL parameters must be defined." unless block
+          path_parameters = Apigen::Struct.new
+          path_parameters.instance_eval &block
+          parameters_in_url = path.scan(PATH_PARAMETER_REGEX).map do |parameter_str,|
+            parameter_str.to_sym
+          end
+          for parameter in parameters_in_url do
+            raise "URL parameter #{parameter} is not defined." if not path_parameters.fields.key? parameter
+          end
+          path_parameters.fields.each do |parameter, type|
+            raise "Parameter #{parameter} does not appear in URL." if not parameters_in_url.include? parameter
+          end
+        else
+          raise "A path block was provided but no URL parameter was found." if block
+        end
       end
 
       ##
