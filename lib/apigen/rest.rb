@@ -84,7 +84,7 @@ module Apigen
         @path = path
         if PATH_PARAMETER_REGEX.match path
           raise "URL parameters must be defined." unless block
-          path_parameters = Apigen::Struct.new
+          path_parameters = Apigen::Object.new
           path_parameters.instance_eval &block
           parameters_in_url = path.scan(PATH_PARAMETER_REGEX).map do |parameter_str,|
             parameter_str.to_sym

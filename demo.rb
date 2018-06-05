@@ -22,18 +22,18 @@ end
 
 # Declare what a User is.
 api.model :user do
-  # User is a struct (multiple fields).
-  type :struct do
+  # User is a object (multiple fields).
+  type :object do
     # User.name is a mandatory string.
     name :string
     # User.age is an optional integer.
     age :int32?
-    # User.children is a list of users.
-    children :list do
+    # User.children is an array of users.
+    children :array do
       item :user
     end
-    # User.additional_info is an optional struct.
-    additional_info :struct? do
+    # User.additional_info is an optional object.
+    additional_info :object? do
       first_name :string
       last_name :string
     end

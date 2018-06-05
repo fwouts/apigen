@@ -29,7 +29,7 @@ module Apigen
             raise "Unknown type :#{type}."
           end
         end
-      elsif type.is_a? Struct or type.is_a? List or type.is_a? Optional
+      elsif type.is_a? Object or type.is_a? Array or type.is_a? Optional
         type.validate self
       else
         raise "Cannot process type for key :#{key}"
@@ -63,14 +63,14 @@ module Apigen
         optional = false
       end
       case shape
-      when :struct
-        struct = Struct.new
-        struct.instance_eval &block
-        type = struct
-      when :list
-        list = List.new
-        list.instance_eval &block
-        type = list
+      when :object
+        object = Object.new
+        object.instance_eval &block
+        type = object
+      when :array
+        array = Array.new
+        array.instance_eval &block
+        type = array
       when :optional
         optional = Optional.new
         optional.instance_eval &block
@@ -98,7 +98,7 @@ module Apigen
     end
   end
 
-  class Struct
+  class Object
     attr_reader :fields
 
     def initialize
@@ -136,7 +136,7 @@ module Apigen
     end
   end
 
-  class List
+  class Array
     attr_reader :item
 
     def initialize
@@ -148,7 +148,7 @@ module Apigen
     end
 
     def validate model_registry
-      raise "Use `item [typename]` to specify the type of items in a list." unless @item
+      raise "Use `item [typename]` to specify the type of items in an array." unless @item
       model_registry.check_type @item
     end
 
@@ -162,7 +162,7 @@ module Apigen
       else
         item_repr = @item.to_s
       end
-      "List<#{item_repr}>"
+      "Array<#{item_repr}>"
     end
   end
 
