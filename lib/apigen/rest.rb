@@ -8,31 +8,16 @@ module Apigen
 
     ##
     # Declares an API.
-    #
-    # Example usage:
-    #  api = Apigen::Rest::Api do
-    #    endpoint do
-    #      name :get_user
-    #      path "/users/:id"
-    #      input :void
-    #      output :success do
-    #        status 200
-    #        type :user
-    #      end
-    #      output :failure do
-    #        status 401
-    #        type :string
-    #      end
-    #    end
-    #  end
     def self.api &block
       api = Api.new
       api.instance_eval &block
       api.validate
       api
     end
-    
+
     class Api
+      attr_reader :endpoints
+
       def initialize
         @endpoints = []
         @model_registry = Apigen::ModelRegistry.new
@@ -69,13 +54,26 @@ module Apigen
     end
 
     class Endpoint
-      attribute_setter :name
+      attribute_setter_getter :name
 
       def initialize name
         @name = name
+        @method = nil
         @path = nil
+        @path_parameters = Apigen::Object.new
         @input = nil
         @outputs = []
+      end
+
+      #
+      # Declares the HTTP method.
+      def method method
+        case method
+        when :get, :post, :put, :delete
+          @method = method
+        else
+          raise "Unknown HTTP method :#{method}."
+        end
       end
 
       #
@@ -83,17 +81,16 @@ module Apigen
       def path path, &block
         @path = path
         if PATH_PARAMETER_REGEX.match path
-          raise "URL parameters must be defined." unless block
-          path_parameters = Apigen::Object.new
-          path_parameters.instance_eval &block
+          block = {} if not block_given?
+          @path_parameters.instance_eval &block
           parameters_in_url = path.scan(PATH_PARAMETER_REGEX).map do |parameter_str,|
             parameter_str.to_sym
           end
           for parameter in parameters_in_url do
-            raise "URL parameter #{parameter} is not defined." if not path_parameters.fields.key? parameter
+            raise "Path parameter :#{parameter} in path #{@path} is not defined." if not @path_parameters.fields.key? parameter
           end
-          path_parameters.fields.each do |parameter, type|
-            raise "Parameter #{parameter} does not appear in URL." if not parameters_in_url.include? parameter
+          @path_parameters.fields.each do |parameter, type|
+            raise "Parameter :#{parameter} does not appear in path #{@path}." if not parameters_in_url.include? parameter
           end
         else
           raise "A path block was provided but no URL parameter was found." if block
@@ -117,10 +114,19 @@ module Apigen
 
       def validate model_registry
         raise "One of the endpoints is missing a name." unless @name
+        raise "Use `method :get/post/put/delete` to set an HTTP method for :#{@name}." unless @method
         raise "Use `path \"/some/path\"` to assign a path to :#{@name}." unless @path
-        raise "Use `input :typename` to assign an input type to :#{@name}." unless @input
+        @path_parameters.validate model_registry
+        case @method
+        when :put, :post
+          raise "Use `input :typename` to assign an input type to :#{@name}." unless @input
+          model_registry.check_type @input
+        when :get
+          raise "Endpoint :#{@name} with method GET cannot accept an input payload." if @input
+        when :delete
+          raise "Endpoint :#{@name} with method DELETE cannot accept an input payload." if @input
+        end
         raise "Endpoint :#{@name} does not declare any outputs" unless @outputs.length > 0
-        model_registry.check_type @input
         for output in @outputs
           output.validate model_registry
         end

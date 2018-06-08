@@ -2,14 +2,16 @@ require './lib/apigen/util'
 
 module Apigen
   class ModelRegistry
+    attr_reader :models
+
     def initialize
       @models = {}
     end
 
     def model name, &block
       model = Apigen::Model.new name
+      raise "You must pass a block when calling `model`." unless block_given?
       model.instance_eval &block
-      raise "Use `name :model_name` to declare each model." unless model.name
       @models[model.name] = model
     end
 
@@ -32,7 +34,7 @@ module Apigen
       elsif type.is_a? Object or type.is_a? Array or type.is_a? Optional
         type.validate self
       else
-        raise "Cannot process type for key :#{key}"
+        raise "Cannot process type #{type.class.name}"
       end
     end
 
@@ -44,14 +46,15 @@ module Apigen
   end
 
   class Model
-    attribute_setter_getter :name
+    attr_reader :name
 
     def initialize name
       @name = name
       @type = nil
     end
 
-    def type shape, &block
+    def type shape = nil, &block
+      return @type if not shape
       @type = Model.type shape, &block
     end
 
@@ -137,19 +140,19 @@ module Apigen
   end
 
   class Array
-    attr_reader :item
+    attr_reader :type
 
     def initialize
-      @item = nil
+      @type = nil
     end
 
-    def item item_type, &block
-      @item = Apigen::Model.type item_type, &block
+    def type type_type, &block
+      @type = Apigen::Model.type type_type, &block
     end
 
     def validate model_registry
-      raise "Use `item [typename]` to specify the type of items in an array." unless @item
-      model_registry.check_type @item
+      raise "Use `type [typename]` to specify the type of types in an array." unless @type
+      model_registry.check_type @type
     end
 
     def to_s
@@ -157,12 +160,12 @@ module Apigen
     end
 
     def repr indent
-      if @item.respond_to? :repr
-        item_repr = @item.repr indent
+      if @type.respond_to? :repr
+        type_repr = @type.repr indent
       else
-        item_repr = @item.to_s
+        type_repr = @type.to_s
       end
-      "Array<#{item_repr}>"
+      "Array<#{type_repr}>"
     end
   end
 
@@ -173,8 +176,8 @@ module Apigen
       @type = nil
     end
 
-    def type item_type, &block
-      @type = Apigen::Model.type item_type, &block
+    def type type_type, &block
+      @type = Apigen::Model.type type_type, &block
     end
 
     def validate model_registry

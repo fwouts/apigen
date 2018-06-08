@@ -30,7 +30,7 @@ api.model :user do
     age :int32?
     # User.children is an array of users.
     children :array do
-      item :user
+      type :user
     end
     # User.additional_info is an optional object.
     additional_info :object? do
