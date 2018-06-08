@@ -1,5 +1,6 @@
 require 'apigen/rest'
 require 'apigen/formats/swagger'
+require 'apigen/formats/openapi'
 
 # Start an API declaration.
 api = Apigen::Rest::Api.new
@@ -81,4 +82,6 @@ end
 api.validate
 
 # Output Swagger.
-puts Apigen::Formats::Swagger.generate api
+# puts Apigen::Formats::Swagger::V2.generate api
+
+puts Apigen::Formats::OpenAPI::V3.generate api

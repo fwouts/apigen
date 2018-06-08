@@ -2,12 +2,12 @@ require 'yaml'
 
 module Apigen
   module Formats
-    module Swagger
-      module V2
+    module OpenAPI
+      module V3
         def self.generate api
           # TODO: Allow overriding any of the hardcoded elements.
           {
-            "swagger" => "2.0",
+            "openapi" => "3.0.0",
             "info" => {
               "version" => "1.0.0",
               "title" => "API",
@@ -20,20 +20,15 @@ module Apigen
                 "name" => "",
               },
             },
-            "host" => "localhost",
-            "basePath" => "/",
-            "schemes" => [
-              "http",
-              "https",
-            ],
-            "consumes" => [
-              "application/json",
-            ],
-            "produces" => [
-              "application/json",
+            "servers" => [
+              {
+                "url" => "http://localhost"
+              },
             ],
             "paths" => self.paths(api),
-            "definitions" => self.definitions(api),
+            "components" => {
+              "schemas" => self.definitions(api),
+            },
           }.to_yaml
         end
 
@@ -48,14 +43,7 @@ module Apigen
                 "in" => "path",
                 "name" => k.to_s,
                 "required" => true,
-              }.merge(self.type(api, v))
-            end
-            if endpoint.input
-              parameters << {
-                "name" => "input",
-                "in" => "body",
-                "required" => true,
-                "schema" => self.type(api, endpoint.input),
+                "schema" => self.type(api, v),
               }
             end
             responses = {}
@@ -64,16 +52,32 @@ module Apigen
                 "description" => "",
               }
               if output.type != :void
-                response["schema"] = self.type(api, output.type)
+                response["content"] = {
+                  "application/json" => {
+                    "schema" => self.type(api, output.type),
+                  },
+                }
               end
               responses[output.status.to_s] = response
             end
+            operation = {
+              "operationId" => endpoint.name.to_s,
+              "description" => "",
+              "parameters" => parameters,
+              "responses" => responses,
+            }
+            if endpoint.input
+              operation["requestBody"] = {
+                "required" => true,
+                "content" => {
+                  "application/json" => {
+                    "schema" => self.type(api, endpoint.input),
+                  },
+                },
+              }
+            end
             hash[endpoint.path] = (hash.key?(endpoint.path) ? hash[endpoint.path] : {}).merge({
-              endpoint.method.to_s => {
-                "description" => "",
-                "parameters" => parameters,
-                "responses" => responses,
-              },
+              endpoint.method.to_s => operation,
             })
           end
           hash
@@ -125,7 +129,7 @@ module Apigen
               "format" => "int32",
             }
           else
-            return { "$ref" => "#/definitions/#{type.to_s}" } if api.models.key? type
+            return { "$ref" => "#/components/schemas/#{type.to_s}" } if api.models.key? type
             raise "Unsupported type: #{type}."
           end
         end

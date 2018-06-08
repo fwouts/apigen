@@ -9,6 +9,7 @@ Gem::Specification.new do |s|
   s.files       = [
     'lib/apigen/model.rb',
     'lib/apigen/rest.rb',
+    'lib/apigen/formats/openapi.rb',
     'lib/apigen/formats/swagger.rb',
   ]
   s.homepage    = 'https://rubygems.org/gems/apigen'
