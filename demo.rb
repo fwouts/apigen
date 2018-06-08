@@ -1,14 +1,28 @@
 require 'apigen/rest'
+require 'apigen/formats/swagger'
 
 # Start an API declaration.
 api = Apigen::Rest::Api.new
 
-# Declare a REST endpoint /users/:id which takes no input
-# and returns either a User or a failure.
-api.endpoint :get_user do
+api.endpoint :list_users do
   method :get
-  path "/users/{id}" do
-    id :string
+  path "/users"
+  output :success do
+    status 200
+    type :array do
+      type :user
+    end
+  end
+end
+
+api.endpoint :create_user do
+  method :post
+  path "/users"
+  input :object do
+    name :string
+    email :string
+    password :string
+    captcha :string
   end
   output :success do
     status 200
@@ -20,32 +34,51 @@ api.endpoint :get_user do
   end
 end
 
-# Declare what a User is.
-api.model :user do
-  # User is a object (multiple fields).
-  type :object do
-    # User.name is a mandatory string.
-    name :string
-    # User.age is an optional integer.
-    age :int32?
-    # User.children is an array of users.
-    children :array do
-      type :user
-    end
-    # User.additional_info is an optional object.
-    additional_info :object? do
-      first_name :string
-      last_name :string
-    end
+api.endpoint :update_user do
+  method :put
+  path "/users/{id}" do
+    id :string
+  end
+  input :object do
+    name :string?
+    email :string?
+    password :string?
+    captcha :string
+  end
+  output :success do
+    status 200
+    type :user
+  end
+  output :failure do
+    status 401
+    type :string
   end
 end
 
-api.model :birthdate do
-  type :string
+api.endpoint :delete_user do
+  method :delete
+  path "/users/{id}" do
+    id :string
+  end
+  output :success do
+    status 200
+    type :void
+  end
+  output :failure do
+    status 401
+    type :string
+  end
+end
+
+api.model :user do
+  type :object do
+    id :int32
+    name :string
+  end
 end
 
 # Ensure that the API spec is valid.
 api.validate
 
-# Show a summary of the API.
-puts api
+# Output Swagger.
+puts Apigen::Formats::Swagger.generate api

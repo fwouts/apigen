@@ -20,7 +20,6 @@ api.endpoint :get_user do
   path "/users/{id}" do
     id :string
   end
-  input :void
   output :success do
     status 200
     type :user
@@ -33,7 +32,7 @@ end
 
 # Declare what a User is.
 api.model :user do
-  # User is a object (multiple fields).
+  # User is a object (multiple properties).
   type :object do
     # User.name is a mandatory string.
     name :string

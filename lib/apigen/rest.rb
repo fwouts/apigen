@@ -37,6 +37,10 @@ module Apigen
         @model_registry.model name, &block
       end
 
+      def models
+        @model_registry.models
+      end
+
       def validate
         @model_registry.validate
         for e in @endpoints do
@@ -55,6 +59,8 @@ module Apigen
 
     class Endpoint
       attribute_setter_getter :name
+      attr_reader :outputs
+      attr_reader :path_parameters
 
       def initialize name
         @name = name
@@ -67,7 +73,8 @@ module Apigen
 
       #
       # Declares the HTTP method.
-      def method method
+      def method method = nil
+        return @method if not method
         case method
         when :get, :post, :put, :delete
           @method = method
@@ -78,7 +85,8 @@ module Apigen
 
       #
       # Declares the endpoint path relative to the host.
-      def path path, &block
+      def path path = nil, &block
+        return @path if not path
         @path = path
         if PATH_PARAMETER_REGEX.match path
           block = {} if not block_given?
@@ -87,9 +95,9 @@ module Apigen
             parameter_str.to_sym
           end
           for parameter in parameters_in_url do
-            raise "Path parameter :#{parameter} in path #{@path} is not defined." if not @path_parameters.fields.key? parameter
+            raise "Path parameter :#{parameter} in path #{@path} is not defined." if not @path_parameters.properties.key? parameter
           end
-          @path_parameters.fields.each do |parameter, type|
+          @path_parameters.properties.each do |parameter, type|
             raise "Parameter :#{parameter} does not appear in path #{@path}." if not parameters_in_url.include? parameter
           end
         else
@@ -99,8 +107,9 @@ module Apigen
 
       ##
       # Declares the input type of an endpoint.
-      def input shape, &block
-        @input = Apigen::Model.type shape, &block
+      def input type = nil, &block
+        return @input if not type
+        @input = Apigen::Model.type type, &block
       end
 
       ##
@@ -142,8 +151,7 @@ module Apigen
     end
 
     class Output
-      attribute_setter :status
-      attribute_setter :type
+      attribute_setter_getter :status
 
       def initialize name
         @name = name
@@ -151,10 +159,17 @@ module Apigen
         @type = nil
       end
 
+      ##
+      # Declares the output type.
+      def type type = nil, &block
+        return @type if not type
+        @type = Apigen::Model.type type, &block
+      end
+
       def validate model_registry
         raise "One of the outputs is missing a name." unless @name
-        raise "Use `status [code]` to assign a status code to :#{@is}." unless @status
-        raise "Use `type :typename` to assign a type to :#{@is}." unless @type
+        raise "Use `status [code]` to assign a status code to :#{@name}." unless @status
+        raise "Use `type :typename` to assign a type to :#{@name}." unless @type
         model_registry.check_type @type
       end
 

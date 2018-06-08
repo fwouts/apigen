@@ -102,20 +102,20 @@ module Apigen
   end
 
   class Object
-    attr_reader :fields
+    attr_reader :properties
 
     def initialize
-      @fields = {}
+      @properties = {}
     end
 
     def method_missing field_name, *args, &block
-      raise "Field :#{field_name} is defined multiple times." unless not @fields.key? field_name
+      raise "Field :#{field_name} is defined multiple times." unless not @properties.key? field_name
       field_type = args[0]
-      @fields[field_name] = Apigen::Model.type field_type, &block
+      @properties[field_name] = Apigen::Model.type field_type, &block
     end
 
     def validate model_registry
-      @fields.each do |key, type|
+      @properties.each do |key, type|
         model_registry.check_type type
       end
     end
@@ -126,7 +126,7 @@ module Apigen
 
     def repr indent
       repr = "{"
-      @fields.each do |key, type|
+      @properties.each do |key, type|
         if type.respond_to? :repr
           type_repr = type.repr (indent + "  ")
         else
@@ -140,14 +140,13 @@ module Apigen
   end
 
   class Array
-    attr_reader :type
-
     def initialize
       @type = nil
     end
 
-    def type type_type, &block
-      @type = Apigen::Model.type type_type, &block
+    def type item_type = nil, &block
+      return @type if not item_type
+      @type = Apigen::Model.type item_type, &block
     end
 
     def validate model_registry
@@ -170,14 +169,13 @@ module Apigen
   end
 
   class Optional
-    attr_reader :type
-
     def initialize
       @type = nil
     end
 
-    def type type_type, &block
-      @type = Apigen::Model.type type_type, &block
+    def type item_type = nil, &block
+      return @type if not item_type
+      @type = Apigen::Model.type item_type, &block
     end
 
     def validate model_registry
