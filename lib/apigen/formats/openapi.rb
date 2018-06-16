@@ -125,8 +125,7 @@ module Apigen
             }
           when :bool
             return {
-              "type" => "integer",
-              "format" => "int32",
+              "type" => "boolean",
             }
           else
             return { "$ref" => "#/components/schemas/#{type.to_s}" } if api.models.key? type
