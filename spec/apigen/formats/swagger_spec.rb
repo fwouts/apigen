@@ -32,7 +32,15 @@ describe Apigen::Formats::Swagger::V2 do
         "/users":
           get:
             description: ''
-            parameters: []
+            parameters:
+              - in: query
+                name: include_admin
+                required: true
+                type: boolean
+              - in: query
+                name: order
+                required: false
+                type: string
             responses:
               '200':
                 description: ''

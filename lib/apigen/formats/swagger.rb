@@ -55,6 +55,15 @@ module Apigen
                   'required' => true
                 }.merge(type(api, v))
               end
+              endpoint.query_parameters.properties.each do |k, v|
+                optional = v.is_a?(Apigen::OptionalType)
+                parameter_type = optional ? v.type : v
+                parameters << {
+                  'in' => 'query',
+                  'name' => k.to_s,
+                  'required' => !optional
+                }.merge(type(api, parameter_type))
+              end
               if endpoint.input
                 parameters << {
                   'name' => 'input',

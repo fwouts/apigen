@@ -11,6 +11,10 @@ module Apigen
     api.endpoint :list_users do
       method :get
       path '/users'
+      query do
+        include_admin :bool
+        order :string?
+      end
       output :success do
         status 200
         type :array do

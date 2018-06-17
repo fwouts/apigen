@@ -68,12 +68,14 @@ module Apigen
       attribute_setter_getter :name
       attr_reader :outputs
       attr_reader :path_parameters
+      attr_reader :query_parameters
 
       def initialize(name)
         @name = name
         @method = nil
         @path = nil
         @path_parameters = Apigen::ObjectType.new
+        @query_parameters = Apigen::ObjectType.new
         @input = nil
         @outputs = []
       end
@@ -110,6 +112,13 @@ module Apigen
         elsif block_given?
           raise 'A path block was provided but no URL parameter was found.'
         end
+      end
+
+      #
+      # Declares query parameters.
+      def query(&block)
+        raise 'A block must be passed to define query fields.' unless block_given?
+        @query_parameters.instance_eval(&block)
       end
 
       ##

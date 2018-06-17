@@ -26,7 +26,17 @@ describe Apigen::Formats::OpenAPI::V3 do
           get:
             operationId: list_users
             description: ''
-            parameters: []
+            parameters:
+              - in: query
+                name: include_admin
+                required: true
+                schema:
+                  type: boolean
+              - in: query
+                name: order
+                required: false
+                schema:
+                  type: string
             responses:
               '200':
                 description: ''
