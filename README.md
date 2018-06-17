@@ -20,6 +20,9 @@ api.endpoint :get_user do
   path "/users/{id}" do
     id :string
   end
+  query do
+    include_children :bool
+  end
   output :success do
     status 200
     type :user
