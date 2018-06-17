@@ -1,12 +1,8 @@
 # OpenAPI spec generator for Ruby
 
-`apigen` is a Ruby gem you can use to generate a valid OpenAPI spec in Ruby.
+`apigen` is a Ruby gem you can use to generate a valid OpenAPI or JSON Schema spec in Ruby.
 
 Read the project overview: https://medium.com/@fwouts/project-openapi-definition-generator-dc440f4d6316
-
-## Warning!
-This is a brand new project and isn't yet functional. The syntax may change and
-the gem doesn't yet generate an OpenAPI spec.
 
 ## Example
 
