@@ -5,4 +5,5 @@ source 'https://rubygems.org'
 git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
 
 gem 'rspec', require: false
+gem 'rspec_junit_formatter', require: false
 gem 'rubocop', require: false
