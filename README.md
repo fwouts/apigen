@@ -61,6 +61,15 @@ end
 # Ensure that the API spec is valid.
 api.validate
 
-# Show a summary of the API.
-puts api
+# Output Swagger (OpenAPI 2).
+require 'apigen/formats/swagger'
+puts Apigen::Formats::Swagger::V2.generate api
+
+# Output OpenAPI 3.
+require 'apigen/formats/openapi'
+puts Apigen::Formats::OpenAPI::V3.generate api
+
+# Output JSON schema.
+require 'apigen/formats/jsonschema'
+puts Apigen::Formats::JsonSchema::Draft7.generate api
 ```
