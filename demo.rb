@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'apigen/rest'
 require 'apigen/formats/swagger'
 require 'apigen/formats/openapi'
@@ -8,7 +10,7 @@ api = Apigen::Rest::Api.new
 
 api.endpoint :list_users do
   method :get
-  path "/users"
+  path '/users'
   output :success do
     status 200
     type :array do
@@ -19,7 +21,7 @@ end
 
 api.endpoint :create_user do
   method :post
-  path "/users"
+  path '/users'
   input :object do
     name :string
     email :string
@@ -38,7 +40,7 @@ end
 
 api.endpoint :update_user do
   method :put
-  path "/users/{id}" do
+  path '/users/{id}' do
     id :string
   end
   input :object do
@@ -59,7 +61,7 @@ end
 
 api.endpoint :delete_user do
   method :delete
-  path "/users/{id}" do
+  path '/users/{id}' do
     id :string
   end
   output :success do

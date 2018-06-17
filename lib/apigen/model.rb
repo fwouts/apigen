@@ -1,6 +1,10 @@
+# frozen_string_literal: true
+
 require './lib/apigen/util'
 
 module Apigen
+  ##
+  # ModelRegistry is where all model definitions are stored.
   class ModelRegistry
     attr_reader :models
 
@@ -8,30 +12,29 @@ module Apigen
       @models = {}
     end
 
-    def model name, &block
+    def model(name, &block)
       model = Apigen::Model.new name
-      raise "You must pass a block when calling `model`." unless block_given?
-      model.instance_eval &block
+      raise 'You must pass a block when calling `model`.' unless block_given?
+      model.instance_eval(&block)
       @models[model.name] = model
     end
 
     def validate
-      @models.each do |key, model|
+      @models.each do |_key, model|
         model.validate self
       end
     end
 
-    def check_type type
+    def check_type(type)
       if type.is_a? Symbol
         case type
+        # rubocop:disable Lint/EmptyWhen
         when :string, :int32, :bool, :void
-          # Valid.
         else
-          if not @models.key? type
-            raise "Unknown type :#{type}."
-          end
+          # rubocop:enable Lint/EmptyWhen
+          raise "Unknown type :#{type}." unless @models.key? type
         end
-      elsif type.is_a? Object or type.is_a? Array or type.is_a? Optional
+      elsif type.is_a?(ObjectType) || type.is_a?(ArrayType) || type.is_a?(OptionalType)
         type.validate self
       else
         raise "Cannot process type #{type.class.name}"
@@ -39,27 +42,29 @@ module Apigen
     end
 
     def to_s
-      @models.map { |key, model|
+      @models.map do |key, model|
         "#{key}: #{model}"
-      }.join "\n"
+      end.join "\n"
     end
   end
 
+  ##
+  # Model represents a data model with a specific name, e.g. "User" with an object type.
   class Model
     attr_reader :name
 
-    def initialize name
+    def initialize(name)
       @name = name
       @type = nil
     end
 
-    def type shape = nil, &block
-      return @type if not shape
+    def type(shape = nil, &block)
+      return @type unless shape
       @type = Model.type shape, &block
     end
 
-    def self.type shape, &block
-      if shape.to_s.end_with? "?"
+    def self.type(shape, &block)
+      if shape.to_s.end_with? '?'
         shape = shape[0..-2].to_sym
         optional = true
       else
@@ -67,22 +72,22 @@ module Apigen
       end
       case shape
       when :object
-        object = Object.new
-        object.instance_eval &block
+        object = ObjectType.new
+        object.instance_eval(&block)
         type = object
       when :array
-        array = Array.new
-        array.instance_eval &block
+        array = ArrayType.new
+        array.instance_eval(&block)
         type = array
       when :optional
-        optional = Optional.new
-        optional.instance_eval &block
+        optional = OptionalType.new
+        optional.instance_eval(&block)
         type = optional
       else
         type = shape
       end
       if optional
-        optional_type = Optional.new
+        optional_type = OptionalType.new
         optional_type.type type
         optional_type
       else
@@ -90,8 +95,8 @@ module Apigen
       end
     end
 
-    def validate model_registry
-      raise "One of the models is missing a name." unless @name
+    def validate(model_registry)
+      raise 'One of the models is missing a name.' unless @name
       raise "Use `type :model_type [block]` to assign a type to :#{@name}." unless @type
       model_registry.check_type @type
     end
@@ -101,37 +106,45 @@ module Apigen
     end
   end
 
-  class Object
+  ##
+  # ObjectType represents an object type, with specific fields.
+  class ObjectType
     attr_reader :properties
 
     def initialize
       @properties = {}
     end
 
-    def method_missing field_name, *args, &block
-      raise "Field :#{field_name} is defined multiple times." unless not @properties.key? field_name
+    # rubocop:disable Style/MethodMissingSuper
+    def method_missing(field_name, *args, &block)
+      raise "Field :#{field_name} is defined multiple times." if @properties.key? field_name
       field_type = args[0]
       @properties[field_name] = Apigen::Model.type field_type, &block
     end
+    # rubocop:enable Style/MethodMissingSuper
 
-    def validate model_registry
-      @properties.each do |key, type|
+    def respond_to_missing?(_method_name, _include_private = false)
+      true
+    end
+
+    def validate(model_registry)
+      @properties.each do |_key, type|
         model_registry.check_type type
       end
     end
 
     def to_s
-      repr ""
+      repr ''
     end
 
-    def repr indent
-      repr = "{"
+    def repr(indent)
+      repr = '{'
       @properties.each do |key, type|
-        if type.respond_to? :repr
-          type_repr = type.repr (indent + "  ")
-        else
-          type_repr = type.to_s
-        end
+        type_repr = if type.respond_to? :repr
+                      type.repr(indent + '  ')
+                    else
+                      type.to_s
+                    end
         repr += "\n#{indent}  #{key}: #{type_repr}"
       end
       repr += "\n#{indent}}"
@@ -139,61 +152,65 @@ module Apigen
     end
   end
 
-  class Array
+  ##
+  # ArrayType represents an array type, with a given item type.
+  class ArrayType
     def initialize
       @type = nil
     end
 
-    def type item_type = nil, &block
-      return @type if not item_type
+    def type(item_type = nil, &block)
+      return @type unless item_type
       @type = Apigen::Model.type item_type, &block
     end
 
-    def validate model_registry
-      raise "Use `type [typename]` to specify the type of types in an array." unless @type
+    def validate(model_registry)
+      raise 'Use `type [typename]` to specify the type of types in an array.' unless @type
       model_registry.check_type @type
     end
 
     def to_s
-      repr ""
+      repr ''
     end
 
-    def repr indent
-      if @type.respond_to? :repr
-        type_repr = @type.repr indent
-      else
-        type_repr = @type.to_s
-      end
-      "Array<#{type_repr}>"
+    def repr(indent)
+      type_repr = if @type.respond_to? :repr
+                    @type.repr indent
+                  else
+                    @type.to_s
+                  end
+      "ArrayType<#{type_repr}>"
     end
   end
 
-  class Optional
+  ##
+  # OptionalType represents a type whose value may be absent.
+  class OptionalType
     def initialize
       @type = nil
     end
 
-    def type item_type = nil, &block
-      return @type if not item_type
+    def type(item_type = nil, &block)
+      return @type unless item_type
       @type = Apigen::Model.type item_type, &block
     end
 
-    def validate model_registry
-      raise "Use `type [typename]` to specify an optional type." unless @type
+    def validate(model_registry)
+      raise 'Use `type [typename]` to specify an optional type.' unless @type
       model_registry.check_type @type
     end
 
     def to_s
-      repr ""
+      repr ''
     end
 
-    def repr indent
-      if @type.respond_to? :repr
-        type_repr = @type.repr indent
-      else
-        type_repr = @type.to_s
-      end
-      "Optional<#{type_repr}>"
+    def repr(indent)
+      type_repr = if @type.respond_to? :repr
+                    @type.repr indent
+                  else
+                    @type.to_s
+                  end
+      "OptionalType<#{type_repr}>"
     end
   end
 end

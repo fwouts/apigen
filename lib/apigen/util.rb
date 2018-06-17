@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ##
 # Creates a setter/getter method for :attribute.
 #
@@ -10,8 +12,8 @@
 #      @name = value
 #    end
 #  end
-def attribute_setter_getter attribute
-  define_method "#{attribute}".to_sym do |value = nil|
+def attribute_setter_getter(attribute)
+  define_method attribute.to_s.to_sym do |value = nil|
     if value.nil?
       instance_variable_get "@#{attribute}"
     else

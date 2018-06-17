@@ -1,135 +1,141 @@
+# frozen_string_literal: true
+
 require 'yaml'
 
 module Apigen
   module Formats
     module OpenAPI
+      ##
+      # OpenAPI 3 generator.
       module V3
-        def self.generate api
-          # TODO: Allow overriding any of the hardcoded elements.
-          {
-            "openapi" => "3.0.0",
-            "info" => {
-              "version" => "1.0.0",
-              "title" => "API",
-              "description" => "",
-              "termsOfService" => "",
-              "contact" => {
-                "name" => "",
+        class << self
+          def generate(api)
+            # TODO: Allow overriding any of the hardcoded elements.
+            {
+              'openapi' => '3.0.0',
+              'info' => {
+                'version' => '1.0.0',
+                'title' => 'API',
+                'description' => '',
+                'termsOfService' => '',
+                'contact' => {
+                  'name' => ''
+                },
+                'license' => {
+                  'name' => ''
+                }
               },
-              "license" => {
-                "name" => "",
-              },
-            },
-            "servers" => [
-              {
-                "url" => "http://localhost"
-              },
-            ],
-            "paths" => self.paths(api),
-            "components" => {
-              "schemas" => self.definitions(api),
-            },
-          }.to_yaml
-        end
-
-        private
-
-        def self.paths api
-          hash = {}
-          for endpoint in api.endpoints
-            parameters = []
-            endpoint.path_parameters.properties.each do |k, v|
-              parameters << {
-                "in" => "path",
-                "name" => k.to_s,
-                "required" => true,
-                "schema" => self.type(api, v),
+              'servers' => [
+                {
+                  'url' => 'http://localhost'
+                }
+              ],
+              'paths' => paths(api),
+              'components' => {
+                'schemas' => definitions(api)
               }
-            end
-            responses = {}
-            for output in endpoint.outputs
-              response = {
-                "description" => "",
-              }
-              if output.type != :void
-                response["content"] = {
-                  "application/json" => {
-                    "schema" => self.type(api, output.type),
-                  },
+            }.to_yaml
+          end
+
+          private
+
+          def paths(api)
+            hash = {}
+            api.endpoints.each do |endpoint|
+              parameters = []
+              endpoint.path_parameters.properties.each do |k, v|
+                parameters << {
+                  'in' => 'path',
+                  'name' => k.to_s,
+                  'required' => true,
+                  'schema' => type(api, v)
                 }
               end
-              responses[output.status.to_s] = response
-            end
-            operation = {
-              "operationId" => endpoint.name.to_s,
-              "description" => "",
-              "parameters" => parameters,
-              "responses" => responses,
-            }
-            if endpoint.input
-              operation["requestBody"] = {
-                "required" => true,
-                "content" => {
-                  "application/json" => {
-                    "schema" => self.type(api, endpoint.input),
-                  },
-                },
+              responses = {}
+              endpoint.outputs.each do |output|
+                response = {
+                  'description' => ''
+                }
+                if output.type != :void
+                  response['content'] = {
+                    'application/json' => {
+                      'schema' => type(api, output.type)
+                    }
+                  }
+                end
+                responses[output.status.to_s] = response
+              end
+              operation = {
+                'operationId' => endpoint.name.to_s,
+                'description' => '',
+                'parameters' => parameters,
+                'responses' => responses
               }
+              if endpoint.input
+                operation['requestBody'] = {
+                  'required' => true,
+                  'content' => {
+                    'application/json' => {
+                      'schema' => type(api, endpoint.input)
+                    }
+                  }
+                }
+              end
+              hash[endpoint.path] = (hash.key?(endpoint.path) ? hash[endpoint.path] : {}).merge(
+                endpoint.method.to_s => operation
+              )
             end
-            hash[endpoint.path] = (hash.key?(endpoint.path) ? hash[endpoint.path] : {}).merge({
-              endpoint.method.to_s => operation,
-            })
+            hash
           end
-          hash
-        end
 
-        def self.definitions api
-          hash = {}
-          api.models.each do |key, model|
-            hash[key.to_s] = self.type api, model.type
-          end
-          hash
-        end
-
-        def self.type api, type
-          case type
-          when Apigen::Object
-            required_fields = []
-            type.properties.each do |k, v|
-              required_fields << k.to_s if not v.is_a? Apigen::Optional
+          def definitions(api)
+            hash = {}
+            api.models.each do |key, model|
+              hash[key.to_s] = type api, model.type
             end
-            return {
-              "type" => "object",
-              "properties" => type.properties.map { |k, v|
-                # We're already reflecting the fact that fields are optional with required fields.
-                property_type = v.is_a?(Apigen::Optional) ? v.type : v
-                [k.to_s, self.type(api, property_type)]
-              }.to_h,
-              "required" => required_fields,
-            }
-          when Apigen::Array
-            return {
-              "type" => "array",
-              "items" => self.type(api, type.type),
-            }
-          when Apigen::Optional
-            raise "Optional fields are only supported within object types."
-          when :string
-            return {
-              "type" => "string",
-            }
-          when :int32
-            return {
-              "type" => "integer",
-              "format" => "int32",
-            }
-          when :bool
-            return {
-              "type" => "boolean",
-            }
-          else
-            return { "$ref" => "#/components/schemas/#{type.to_s}" } if api.models.key? type
-            raise "Unsupported type: #{type}."
+            hash
+          end
+
+          def type(api, type)
+            case type
+            when Apigen::ObjectType
+              required_fields = []
+              type.properties.each do |k, v|
+                required_fields << k.to_s unless v.is_a? Apigen::OptionalType
+              end
+              {
+                'type' => 'object',
+                'properties' => type.properties.map do |k, v|
+                  # We're already reflecting the fact that fields are optional with required fields.
+                  property_type = v.is_a?(Apigen::OptionalType) ? v.type : v
+                  [k.to_s, type(api, property_type)]
+                end.to_h,
+                'required' => required_fields
+              }
+            when Apigen::ArrayType
+              {
+                'type' => 'array',
+                'items' => type(api, type.type)
+              }
+            when Apigen::OptionalType
+              raise 'OptionalType fields are only supported within object types.'
+            when :string
+              {
+                'type' => 'string'
+              }
+            when :int32
+              {
+                'type' => 'integer',
+                'format' => 'int32'
+              }
+            when :bool
+              {
+                'type' => 'boolean'
+              }
+            else
+              return { '$ref' => "#/components/schemas/#{type}" } if api.models.key? type
+              raise "Unsupported type: #{type}."
+            end
           end
         end
       end

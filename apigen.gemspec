@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Gem::Specification.new do |s|
   s.name        = 'apigen'
   s.version     = '0.0.2'
@@ -11,7 +13,7 @@ Gem::Specification.new do |s|
     'lib/apigen/rest.rb',
     'lib/apigen/formats/jsonschema.rb',
     'lib/apigen/formats/openapi.rb',
-    'lib/apigen/formats/swagger.rb',
+    'lib/apigen/formats/swagger.rb'
   ]
   s.homepage    = 'https://rubygems.org/gems/apigen'
   s.license     = 'MIT'

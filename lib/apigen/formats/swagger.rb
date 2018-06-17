@@ -1,131 +1,137 @@
+# frozen_string_literal: true
+
 require 'yaml'
 
 module Apigen
   module Formats
     module Swagger
+      ##
+      # Swagger 2 (aka OpenAPI 2) generator.
       module V2
-        def self.generate api
-          # TODO: Allow overriding any of the hardcoded elements.
-          {
-            "swagger" => "2.0",
-            "info" => {
-              "version" => "1.0.0",
-              "title" => "API",
-              "description" => "",
-              "termsOfService" => "",
-              "contact" => {
-                "name" => "",
+        class << self
+          def generate(api)
+            # TODO: Allow overriding any of the hardcoded elements.
+            {
+              'swagger' => '2.0',
+              'info' => {
+                'version' => '1.0.0',
+                'title' => 'API',
+                'description' => '',
+                'termsOfService' => '',
+                'contact' => {
+                  'name' => ''
+                },
+                'license' => {
+                  'name' => ''
+                }
               },
-              "license" => {
-                "name" => "",
-              },
-            },
-            "host" => "localhost",
-            "basePath" => "/",
-            "schemes" => [
-              "http",
-              "https",
-            ],
-            "consumes" => [
-              "application/json",
-            ],
-            "produces" => [
-              "application/json",
-            ],
-            "paths" => self.paths(api),
-            "definitions" => self.definitions(api),
-          }.to_yaml
-        end
+              'host' => 'localhost',
+              'basePath' => '/',
+              'schemes' => %w[
+                http
+                https
+              ],
+              'consumes' => [
+                'application/json'
+              ],
+              'produces' => [
+                'application/json'
+              ],
+              'paths' => paths(api),
+              'definitions' => definitions(api)
+            }.to_yaml
+          end
 
-        private
+          private
 
-        def self.paths api
-          hash = {}
-          for endpoint in api.endpoints
-            parameters = []
-            endpoint.path_parameters.properties.each do |k, v|
-              parameters << {
-                "in" => "path",
-                "name" => k.to_s,
-                "required" => true,
-              }.merge(self.type(api, v))
-            end
-            if endpoint.input
-              parameters << {
-                "name" => "input",
-                "in" => "body",
-                "required" => true,
-                "schema" => self.type(api, endpoint.input),
-              }
-            end
-            responses = {}
-            for output in endpoint.outputs
-              response = {
-                "description" => "",
-              }
-              if output.type != :void
-                response["schema"] = self.type(api, output.type)
+          def paths(api)
+            hash = {}
+            api.endpoints.each do |endpoint|
+              parameters = []
+              endpoint.path_parameters.properties.each do |k, v|
+                parameters << {
+                  'in' => 'path',
+                  'name' => k.to_s,
+                  'required' => true
+                }.merge(type(api, v))
               end
-              responses[output.status.to_s] = response
+              if endpoint.input
+                parameters << {
+                  'name' => 'input',
+                  'in' => 'body',
+                  'required' => true,
+                  'schema' => type(api, endpoint.input)
+                }
+              end
+              responses = {}
+              endpoint.outputs.each do |output|
+                response = {
+                  'description' => ''
+                }
+                if output.type != :void
+                  response['schema'] = type(api, output.type)
+                end
+                responses[output.status.to_s] = response
+              end
+              hash[endpoint.path] = (hash.key?(endpoint.path) ? hash[endpoint.path] : {}).merge(
+                endpoint.method.to_s => {
+                  'description' => '',
+                  'parameters' => parameters,
+                  'responses' => responses
+                }
+              )
             end
-            hash[endpoint.path] = (hash.key?(endpoint.path) ? hash[endpoint.path] : {}).merge({
-              endpoint.method.to_s => {
-                "description" => "",
-                "parameters" => parameters,
-                "responses" => responses,
-              },
-            })
+            hash
           end
-          hash
-        end
 
-        def self.definitions api
-          hash = {}
-          api.models.each do |key, model|
-            hash[key.to_s] = self.type api, model.type
-          end
-          hash
-        end
-
-        def self.type api, type
-          case type
-          when Apigen::Object
-            required_fields = []
-            type.properties.each do |k, v|
-              required_fields << k.to_s if not v.is_a? Apigen::Optional
+          def definitions(api)
+            hash = {}
+            api.models.each do |key, model|
+              hash[key.to_s] = type api, model.type
             end
-            return {
-              "type" => "object",
-              "properties" => type.properties.map { |k, v|
-                # We're already reflecting the fact that fields are optional with required fields.
-                property_type = v.is_a?(Apigen::Optional) ? v.type : v
-                [k.to_s, self.type(api, property_type)]
-              }.to_h,
-              "required" => required_fields,
-            }
-          when Apigen::Array
-            return {
-              "type" => "array",
-              "items" => self.type(api, type.type),
-            }
-          when Apigen::Optional
-            raise "Optional fields are only supported within object types."
-          when :string
-            return {
-              "type" => "string",
-            }
-          when :int32
-            return {
-              "type" => "integer",
-              "format" => "int32",
-            }
-          when :bool
-            return {
-              "type" => "boolean",
-            }
-          else
-            return { "$ref" => "#/definitions/#{type.to_s}" } if api.models.key? type
-            raise "Unsupported type: #{type}."
+            hash
+          end
+
+          def type(api, type)
+            case type
+            when Apigen::ObjectType
+              required_fields = []
+              type.properties.each do |k, v|
+                required_fields << k.to_s unless v.is_a? Apigen::OptionalType
+              end
+              {
+                'type' => 'object',
+                'properties' => type.properties.map do |k, v|
+                  # We're already reflecting the fact that fields are optional with required fields.
+                  property_type = v.is_a?(Apigen::OptionalType) ? v.type : v
+                  [k.to_s, type(api, property_type)]
+                end.to_h,
+                'required' => required_fields
+              }
+            when Apigen::ArrayType
+              {
+                'type' => 'array',
+                'items' => type(api, type.type)
+              }
+            when Apigen::OptionalType
+              raise 'OptionalType fields are only supported within object types.'
+            when :string
+              {
+                'type' => 'string'
+              }
+            when :int32
+              {
+                'type' => 'integer',
+                'format' => 'int32'
+              }
+            when :bool
+              {
+                'type' => 'boolean'
+              }
+            else
+              return { '$ref' => "#/definitions/#{type}" } if api.models.key? type
+              raise "Unsupported type: #{type}."
+            end
           end
         end
       end
