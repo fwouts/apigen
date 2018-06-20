@@ -20,11 +20,12 @@ api = Apigen::Rest::Api.new
 # Declare a REST endpoint /users/:id which takes no input
 # and returns either a User or a failure.
 api.endpoint :get_user do
+  description "Fetches the detail of a specific user"
   path "/users/{id}" do
     id :string
   end
   query do
-    include_children :bool
+    include_children :bool, "Whether to include children or not"
   end
   output :success do
     status 200
@@ -38,6 +39,11 @@ end
 
 # Declare what a User is.
 api.model :user do
+  description "A user"
+  example (
+    'name' => 'Frank',
+    'children' => [],
+  )
   # User is a object (multiple properties).
   type :object do
     # User.name is a mandatory string.
