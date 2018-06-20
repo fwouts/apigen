@@ -48,80 +48,64 @@ module Apigen
             hash = {}
             api.endpoints.each do |endpoint|
               parameters = []
-              endpoint.path_parameters.properties.each do |k, v|
-                parameters << {
-                  'in' => 'path',
-                  'name' => k.to_s,
-                  'required' => true
-                }.merge(type(api, v))
-              end
-              endpoint.query_parameters.properties.each do |k, v|
-                optional = v.is_a?(Apigen::OptionalType)
-                parameter_type = optional ? v.type : v
-                parameters << {
-                  'in' => 'query',
-                  'name' => k.to_s,
-                  'required' => !optional
-                }.merge(type(api, parameter_type))
-              end
-              if endpoint.input
-                parameters << {
-                  'name' => 'input',
-                  'in' => 'body',
-                  'required' => true,
-                  'schema' => type(api, endpoint.input)
-                }
-              end
-              responses = {}
-              endpoint.outputs.each do |output|
-                response = {
-                  'description' => ''
-                }
-                if output.type != :void
-                  response['schema'] = type(api, output.type)
-                end
-                responses[output.status.to_s] = response
-              end
-              hash[endpoint.path] = (hash.key?(endpoint.path) ? hash[endpoint.path] : {}).merge(
-                endpoint.method.to_s => {
-                  'description' => '',
-                  'parameters' => parameters,
-                  'responses' => responses
-                }
-              )
+              parameters.concat(endpoint.path_parameters.properties.map { |name, type| path_parameter(api, name, type) })
+              parameters.concat(endpoint.query_parameters.properties.map { |name, type| query_parameter(api, name, type) })
+              parameters << input_parameter(api, endpoint.input) if endpoint.input
+              responses = endpoint.outputs.map { |output| response(api, output) }.to_h
+              hash[endpoint.path] ||= {}
+              hash[endpoint.path][endpoint.method.to_s] = {
+                'description' => '',
+                'parameters' => parameters,
+                'responses' => responses
+              }
             end
             hash
+          end
+
+          def path_parameter(api, name, type)
+            {
+              'in' => 'path',
+              'name' => name.to_s,
+              'required' => true
+            }.merge(schema(api, type))
+          end
+
+          def query_parameter(api, name, type)
+            optional = type.is_a?(Apigen::OptionalType)
+            actual_type = optional ? type.type : type
+            {
+              'in' => 'query',
+              'name' => name.to_s,
+              'required' => !optional
+            }.merge(schema(api, actual_type))
+          end
+
+          def input_parameter(api, type)
+            {
+              'name' => 'input',
+              'in' => 'body',
+              'required' => true,
+              'schema' => schema(api, type)
+            }
+          end
+
+          def response(api, output)
+            response = {}
+            response['description'] = ''
+            response['schema'] = schema(api, output.type) if output.type != :void
+            [output.status.to_s, response]
           end
 
           def definitions(api)
-            hash = {}
-            api.models.each do |key, model|
-              hash[key.to_s] = type api, model.type
-            end
-            hash
+            api.models.map { |key, model| [key.to_s, schema(api, model.type)] }.to_h
           end
 
-          def type(api, type)
+          def schema(api, type)
             case type
             when Apigen::ObjectType
-              required_fields = []
-              type.properties.each do |k, v|
-                required_fields << k.to_s unless v.is_a? Apigen::OptionalType
-              end
-              {
-                'type' => 'object',
-                'properties' => type.properties.map do |k, v|
-                  # We're already reflecting the fact that fields are optional with required fields.
-                  property_type = v.is_a?(Apigen::OptionalType) ? v.type : v
-                  [k.to_s, type(api, property_type)]
-                end.to_h,
-                'required' => required_fields
-              }
+              object_schema(api, type)
             when Apigen::ArrayType
-              {
-                'type' => 'array',
-                'items' => type(api, type.type)
-              }
+              array_schema(api, type)
             when Apigen::OptionalType
               raise 'OptionalType fields are only supported within object types.'
             when :string
@@ -141,6 +125,27 @@ module Apigen
               return { '$ref' => "#/definitions/#{type}" } if api.models.key? type
               raise "Unsupported type: #{type}."
             end
+          end
+
+          def object_schema(api, object_type)
+            {
+              'type' => 'object',
+              'properties' => object_type.properties.map { |name, type| object_property(api, name, type) }.to_h,
+              'required' => object_type.properties.reject { |_name, type| type.is_a? Apigen::OptionalType }.map { |name, _type| name.to_s }
+            }
+          end
+
+          def object_property(api, name, type)
+            # A property is never optional, because we specify which are required on the schema itself.
+            actual_type = type.is_a?(Apigen::OptionalType) ? type.type : type
+            [name.to_s, schema(api, actual_type)]
+          end
+
+          def array_schema(api, array_type)
+            {
+              'type' => 'array',
+              'items' => schema(api, array_type.type)
+            }
           end
         end
       end
