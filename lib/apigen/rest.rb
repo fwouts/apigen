@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require './lib/apigen/model'
-require './lib/apigen/util'
+require_relative './model'
+require_relative './util'
 
 PATH_PARAMETER_REGEX = /\{(\w+)\}/
 

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require './lib/apigen/util'
+require 'set'
+require_relative './util'
 
 module Apigen
   PRIMARY_TYPES = Set.new %i[string int32 bool void]
