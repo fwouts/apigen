@@ -62,7 +62,7 @@ jobs:
           path: /tmp/test-results
           destination: test-results
 
-  healthcheck:
+  healthcheck-published:
     docker:
        - image: circleci/ruby:2.4.1-node-browsers
     working_directory: ~/repo
@@ -76,8 +76,23 @@ jobs:
             bundle install --jobs=4 --retry=3 --path vendor/bundle
 
       - run:
-          name: run health check
+          name: run health check with latest published gem
           command: |
+            cd healthcheck
+            bundle exec ruby api.rb
+
+  healthcheck-master:
+    docker:
+       - image: circleci/ruby:2.4.1-node-browsers
+    working_directory: ~/repo
+    steps:
+      - checkout
+
+      - run:
+          name: run health check with new build of gem
+          command: |
+            gem build apigen.gemspec
+            gem install apigen-*.gem
             cd healthcheck
             bundle exec ruby api.rb
 
@@ -86,4 +101,5 @@ workflows:
   build_and_test:
     jobs:
       - build
-      - healthcheck
+      - healthcheck-published
+      - healthcheck-master
