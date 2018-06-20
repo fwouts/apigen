@@ -81,7 +81,7 @@ jobs:
             cd healthcheck
             bundle exec ruby api.rb
 
-  healthcheck-master:
+  healthcheck-current:
     docker:
        - image: circleci/ruby:2.4.1-node-browsers
     working_directory: ~/repo
@@ -102,4 +102,4 @@ workflows:
     jobs:
       - build
       - healthcheck-published
-      - healthcheck-master
+      - healthcheck-current
