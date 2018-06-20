@@ -52,7 +52,7 @@ module Apigen
                 'parameters' => parameters,
                 'responses' => responses
               }
-              operation['requestBody'] = input(api, endpoint.input) if endpoint.input
+              operation['requestBody'] = input(api, endpoint.input.type) if endpoint.input
               hash[endpoint.path] ||= {}
               hash[endpoint.path][endpoint.method.to_s] = operation
             end
