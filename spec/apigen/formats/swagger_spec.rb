@@ -13,7 +13,7 @@ describe Apigen::Formats::Swagger::V2 do
       info:
         version: 1.0.0
         title: API
-        description: ''
+        description: Making APIs great again
         termsOfService: ''
         contact:
           name: ''
@@ -31,25 +31,26 @@ describe Apigen::Formats::Swagger::V2 do
       paths:
         "/users":
           get:
-            description: ''
             parameters:
             - in: query
               name: include_admin
               required: true
               type: boolean
+              description: Whether to include administrators or not
             - in: query
               name: order
               required: false
               type: string
+              description: A sorting order
             responses:
               '200':
-                description: ''
+                description: Success
                 schema:
                   type: array
                   items:
                     "$ref": "#/definitions/user"
+            description: Returns a list of users
           post:
-            description: ''
             parameters:
             - name: input
               in: body
@@ -59,10 +60,15 @@ describe Apigen::Formats::Swagger::V2 do
                 properties:
                   name:
                     type: string
+                    description: The name of the user
+                    example: John
                   email:
                     type: string
+                    description: The user's email address
                   password:
                     type: string
+                    description: A password in plain text
+                    example: foobar123
                   captcha:
                     type: string
                 required:
@@ -72,16 +78,16 @@ describe Apigen::Formats::Swagger::V2 do
                 - captcha
             responses:
               '200':
-                description: ''
+                description: Success
                 schema:
                   "$ref": "#/definitions/user"
               '401':
-                description: ''
+                description: Unauthorised failure
                 schema:
                   type: string
+            description: Creates a user
         "/users/{id}":
           put:
-            description: ''
             parameters:
             - in: path
               name: id
@@ -103,27 +109,26 @@ describe Apigen::Formats::Swagger::V2 do
                     type: string
                 required:
                 - captcha
+              description: Updates a user's properties. A subset of properties can be provided.
+              example:
+                name: Frank
+                captcha: AB123
             responses:
               '200':
-                description: ''
                 schema:
                   "$ref": "#/definitions/user"
               '401':
-                description: ''
                 schema:
                   type: string
           delete:
-            description: ''
             parameters:
             - in: path
               name: id
               required: true
               type: string
             responses:
-              '200':
-                description: ''
+              '200': {}
               '401':
-                description: ''
                 schema:
                   type: string
       definitions:
@@ -138,6 +143,12 @@ describe Apigen::Formats::Swagger::V2 do
           required:
           - id
           - profile
+          description: A user
+          example:
+            id: 123
+            profile:
+              name: Frank
+              avatar_url: https://google.com/avatar.png
         user_profile:
           type: object
           properties:

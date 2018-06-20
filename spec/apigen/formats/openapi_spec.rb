@@ -13,7 +13,7 @@ describe Apigen::Formats::OpenAPI::V3 do
       info:
         version: 1.0.0
         title: API
-        description: ''
+        description: Making APIs great again
         termsOfService: ''
         contact:
           name: ''
@@ -25,44 +25,46 @@ describe Apigen::Formats::OpenAPI::V3 do
         "/users":
           get:
             operationId: list_users
-            description: ''
             parameters:
             - in: query
               name: include_admin
               required: true
               schema:
                 type: boolean
+              description: Whether to include administrators or not
             - in: query
               name: order
               required: false
               schema:
                 type: string
+              description: A sorting order
             responses:
               '200':
-                description: ''
+                description: Success
                 content:
                   application/json:
                     schema:
                       type: array
                       items:
                         "$ref": "#/components/schemas/user"
+            description: Returns a list of users
           post:
             operationId: create_user
-            description: ''
             parameters: []
             responses:
               '200':
-                description: ''
+                description: Success
                 content:
                   application/json:
                     schema:
                       "$ref": "#/components/schemas/user"
               '401':
-                description: ''
+                description: Unauthorised failure
                 content:
                   application/json:
                     schema:
                       type: string
+            description: Creates a user
             requestBody:
               required: true
               content:
@@ -72,10 +74,15 @@ describe Apigen::Formats::OpenAPI::V3 do
                     properties:
                       name:
                         type: string
+                        description: The name of the user
+                        example: John
                       email:
                         type: string
+                        description: The user's email address
                       password:
                         type: string
+                        description: A password in plain text
+                        example: foobar123
                       captcha:
                         type: string
                     required:
@@ -86,7 +93,6 @@ describe Apigen::Formats::OpenAPI::V3 do
         "/users/{id}":
           put:
             operationId: update_user
-            description: ''
             parameters:
             - in: path
               name: id
@@ -95,13 +101,11 @@ describe Apigen::Formats::OpenAPI::V3 do
                 type: string
             responses:
               '200':
-                description: ''
                 content:
                   application/json:
                     schema:
                       "$ref": "#/components/schemas/user"
               '401':
-                description: ''
                 content:
                   application/json:
                     schema:
@@ -123,9 +127,12 @@ describe Apigen::Formats::OpenAPI::V3 do
                         type: string
                     required:
                     - captcha
+              description: Updates a user's properties. A subset of properties can be provided.
+              example:
+                name: Frank
+                captcha: AB123
           delete:
             operationId: delete_user
-            description: ''
             parameters:
             - in: path
               name: id
@@ -133,10 +140,8 @@ describe Apigen::Formats::OpenAPI::V3 do
               schema:
                 type: string
             responses:
-              '200':
-                description: ''
+              '200': {}
               '401':
-                description: ''
                 content:
                   application/json:
                     schema:
@@ -154,6 +159,12 @@ describe Apigen::Formats::OpenAPI::V3 do
             required:
             - id
             - profile
+            description: A user
+            example:
+              id: 123
+              profile:
+                name: Frank
+                avatar_url: https://google.com/avatar.png
           user_profile:
             type: object
             properties:

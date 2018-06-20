@@ -18,11 +18,18 @@ module Apigen
           def definitions(api)
             {
               '$schema' => 'http://json-schema.org/draft-07/schema#',
-              'definitions' => api.models.map { |key, model| [key.to_s, schema(api, model.type)] }.to_h
+              'definitions' => api.models.map { |key, model| [key.to_s, schema(api, model.type, model.description, model.example)] }.to_h
             }
           end
 
-          def schema(api, type)
+          def schema(api, type, description = nil, example = nil)
+            schema = schema_without_description(api, type)
+            schema['description'] = description unless description.nil?
+            schema['example'] = example unless example.nil?
+            schema
+          end
+
+          def schema_without_description(api, type)
             case type
             when Apigen::ObjectType
               object_schema(api, type)
@@ -52,15 +59,15 @@ module Apigen
           def object_schema(api, object_type)
             {
               'type' => 'object',
-              'properties' => object_type.properties.map { |name, type| object_property(api, name, type) }.to_h,
-              'required' => object_type.properties.reject { |_name, type| type.is_a? Apigen::OptionalType }.map { |name, _type| name.to_s }
+              'properties' => object_type.properties.map { |name, property| object_property(api, name, property) }.to_h,
+              'required' => object_type.properties.reject { |_name, property| property.type.is_a? Apigen::OptionalType }.map { |name, _property| name.to_s }
             }
           end
 
-          def object_property(api, name, type)
+          def object_property(api, name, property)
             # A property is never optional, because we specify which are required on the schema itself.
-            actual_type = type.is_a?(Apigen::OptionalType) ? type.type : type
-            [name.to_s, schema(api, actual_type)]
+            actual_type = property.type.is_a?(Apigen::OptionalType) ? property.type.type : property.type
+            [name.to_s, schema(api, actual_type, property.description, property.example)]
           end
 
           def array_schema(api, array_type)
