@@ -5,6 +5,8 @@
 version: 2
 jobs:
   build:
+    environment:
+        CC_TEST_REPORTER_ID: ee45792ce9c2bbbf7f34d5aa78f84d0656e727cdb765fda96a60d286c9e0959b
     docker:
        - image: circleci/ruby:2.4.1-node-browsers
     working_directory: ~/repo
@@ -17,6 +19,12 @@ jobs:
           - v1-dependencies-{{ checksum "Gemfile.lock" }}
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
+
+      - run:
+          name: Setup Code Climate test-reporter
+          command: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
 
       - run:
           name: install dependencies
@@ -39,11 +47,13 @@ jobs:
             mkdir /tmp/test-results
             TEST_FILES="$(circleci tests glob "spec/**/*_spec.rb" | circleci tests split --split-by=timings)"
 
+            ./cc-test-reporter before-build
             bundle exec rspec --format progress \
                             --format RspecJunitFormatter \
                             --out /tmp/test-results/rspec.xml \
                             --format progress \
                             $TEST_FILES
+            ./cc-test-reporter after-build --coverage-input-type clover --exit-code $?
 
       # collect reports
       - store_test_results:
