@@ -48,10 +48,13 @@ module Apigen
   # Model represents a data model with a specific name, e.g. "User" with an object type.
   class Model
     attr_reader :name
+    attribute_setter_getter :description
+    attribute_setter_getter :example
 
     def initialize(name)
       @name = name
       @type = nil
+      @description = nil
     end
 
     def type(shape = nil, &block)
@@ -109,7 +112,20 @@ module Apigen
     def method_missing(field_name, *args, &block)
       raise "Field :#{field_name} is defined multiple times." if @properties.key? field_name
       field_type = args[0]
-      @properties[field_name] = Apigen::Model.type field_type, &block
+      field_description = args[1]
+      block_called = false
+      if block_given?
+        block_wrapper = lambda do
+          block_called = true
+          yield
+        end
+      end
+      property = ObjectProperty.new(
+        Apigen::Model.type(field_type, &block_wrapper),
+        field_description
+      )
+      property.instance_eval(&block) if block_given? && !block_called
+      @properties[field_name] = property
     end
     # rubocop:enable Style/MethodMissingSuper
 
@@ -118,8 +134,8 @@ module Apigen
     end
 
     def validate(model_registry)
-      @properties.each do |_key, type|
-        model_registry.check_type type
+      @properties.each do |_key, property|
+        model_registry.check_type property.type
       end
     end
 
@@ -129,16 +145,29 @@ module Apigen
 
     def repr(indent)
       repr = '{'
-      @properties.each do |key, type|
-        type_repr = if type.respond_to? :repr
-                      type.repr(indent + '  ')
+      @properties.each do |key, property|
+        type_repr = if property.type.respond_to? :repr
+                      property.type.repr(indent + '  ')
                     else
-                      type.to_s
+                      property.type.to_s
                     end
         repr += "\n#{indent}  #{key}: #{type_repr}"
       end
       repr += "\n#{indent}}"
       repr
+    end
+  end
+
+  ##
+  # ObjectProperty is a specific property in an ObjectType.
+  class ObjectProperty
+    attr_reader :type
+    attribute_setter_getter :description
+    attribute_setter_getter :example
+
+    def initialize(type, description = nil)
+      @type = type
+      @description = description
     end
   end
 

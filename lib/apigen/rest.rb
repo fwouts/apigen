@@ -22,8 +22,10 @@ module Apigen
     # Api is a self-contained definition of a REST API, includings its endpoints and data types.
     class Api
       attr_reader :endpoints
+      attribute_setter_getter :description
 
       def initialize
+        @description = ''
         @endpoints = []
         @model_registry = Apigen::ModelRegistry.new
       end
@@ -66,6 +68,7 @@ module Apigen
     # Endpoint is a definition of a specific endpoint in the API, e.g. /users with GET method.
     class Endpoint
       attribute_setter_getter :name
+      attribute_setter_getter :description
       attr_reader :outputs
       attr_reader :path_parameters
       attr_reader :query_parameters
@@ -78,6 +81,7 @@ module Apigen
         @query_parameters = Apigen::ObjectType.new
         @input = nil
         @outputs = []
+        @description = nil
       end
 
       #
@@ -194,8 +198,12 @@ module Apigen
     ##
     # Input is the request body expected by an API endpoint.
     class Input
+      attribute_setter_getter :description
+      attribute_setter_getter :example
+
       def initialize
         @type = nil
+        @description = nil
       end
 
       ##
@@ -225,11 +233,14 @@ module Apigen
     # Output is the response type associated with a specific status code for an API endpoint.
     class Output
       attribute_setter_getter :status
+      attribute_setter_getter :description
+      attribute_setter_getter :example
 
       def initialize(name)
         @name = name
         @status = nil
         @type = nil
+        @description = nil
       end
 
       ##

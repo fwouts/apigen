@@ -25,7 +25,15 @@ describe Apigen::Formats::JsonSchema::Draft7 do
             "required": [
               "id",
               "profile"
-            ]
+            ],
+            "description": "A user",
+            "example": {
+              "id": 123,
+              "profile": {
+                "name": "Frank",
+                "avatar_url": "https://google.com/avatar.png"
+              }
+            }
           },
           "user_profile": {
             "type": "object",
