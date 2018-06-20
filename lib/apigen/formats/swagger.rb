@@ -50,7 +50,7 @@ module Apigen
               parameters = []
               parameters.concat(endpoint.path_parameters.properties.map { |name, type| path_parameter(api, name, type) })
               parameters.concat(endpoint.query_parameters.properties.map { |name, type| query_parameter(api, name, type) })
-              parameters << input_parameter(api, endpoint.input) if endpoint.input
+              parameters << input_parameter(api, endpoint.input.type) if endpoint.input
               responses = endpoint.outputs.map { |output| response(api, output) }.to_h
               hash[endpoint.path] ||= {}
               hash[endpoint.path][endpoint.method.to_s] = {

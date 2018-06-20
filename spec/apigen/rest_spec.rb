@@ -32,7 +32,7 @@ RSpec.describe Apigen::Rest do
           end
         end
       end
-    end.to raise_error 'Use `input :typename` to assign an input type to :create_user.'
+    end.to raise_error 'Use `input { type :typename }` to assign an input type to :create_user.'
   end
 
   it 'requires input for PUT endpoints' do
@@ -49,7 +49,7 @@ RSpec.describe Apigen::Rest do
           end
         end
       end
-    end.to raise_error 'Use `input :typename` to assign an input type to :update_user.'
+    end.to raise_error 'Use `input { type :typename }` to assign an input type to :update_user.'
   end
 
   it 'rejects input for GET endpoints' do
@@ -60,7 +60,9 @@ RSpec.describe Apigen::Rest do
           path '/users/{id}' do
             id :string
           end
-          input :string
+          input do
+            type :string
+          end
           output :success do
             status 200
             type :string
@@ -78,7 +80,9 @@ RSpec.describe Apigen::Rest do
           path '/users/{id}' do
             id :string
           end
-          input :string
+          input do
+            type :string
+          end
           output :success do
             status 200
             type :string
@@ -94,7 +98,9 @@ RSpec.describe Apigen::Rest do
         endpoint :create_user do
           method :post
           path '/users'
-          input :user
+          input do
+            type :user
+          end
           output :success do
             status 200
             type :string
@@ -116,7 +122,9 @@ RSpec.describe Apigen::Rest do
         endpoint :wrong_method do
           method :abc
           path '/users'
-          input :user
+          input do
+            type :user
+          end
           output :success do
             status 200
             type :string
@@ -132,7 +140,9 @@ RSpec.describe Apigen::Rest do
         endpoint :create_user do
           method :post
           path '/users'
-          input :missing
+          input do
+            type :missing
+          end
           output :success do
             status 200
             type :string
@@ -148,7 +158,9 @@ RSpec.describe Apigen::Rest do
         endpoint :create_user do
           method :post
           path '/users'
-          input :void
+          input do
+            type :void
+          end
           output :success do
             status 200
             type :missing

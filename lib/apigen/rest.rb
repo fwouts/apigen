@@ -113,9 +113,10 @@ module Apigen
 
       ##
       # Declares the input type of an endpoint.
-      def input(type = nil, &block)
-        return @input unless type
-        @input = Apigen::Model.type type, &block
+      def input(&block)
+        return @input unless block_given?
+        @input = Input.new
+        @input.instance_eval(&block)
       end
 
       ##
@@ -169,8 +170,8 @@ module Apigen
       def validate_input(model_registry)
         case @method
         when :put, :post
-          raise "Use `input :typename` to assign an input type to :#{@name}." unless @input
-          model_registry.check_type @input
+          raise "Use `input { type :typename }` to assign an input type to :#{@name}." unless @input
+          @input.validate(model_registry)
         when :get
           raise "Endpoint :#{@name} with method GET cannot accept an input payload." if @input
         when :delete
@@ -187,6 +188,36 @@ module Apigen
         @outputs.each do |output|
           output.validate model_registry
         end
+      end
+    end
+
+    ##
+    # Input is the request body expected by an API endpoint.
+    class Input
+      def initialize
+        @type = nil
+      end
+
+      ##
+      # Declares the input type.
+      def type(type = nil, &block)
+        return @type unless type
+        @type = Apigen::Model.type type, &block
+      end
+
+      def validate(model_registry)
+        validate_properties
+        model_registry.check_type @type
+      end
+
+      def to_s
+        @type.to_s
+      end
+
+      private
+
+      def validate_properties
+        raise 'Use `type :typename` to assign a type to the input.' unless @type
       end
     end
 

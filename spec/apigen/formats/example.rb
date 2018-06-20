@@ -26,11 +26,13 @@ module Apigen
     api.endpoint :create_user do
       method :post
       path '/users'
-      input :object do
-        name :string
-        email :string
-        password :string
-        captcha :string
+      input do
+        type :object do
+          name :string
+          email :string
+          password :string
+          captcha :string
+        end
       end
       output :success do
         status 200
@@ -47,11 +49,13 @@ module Apigen
       path '/users/{id}' do
         id :string
       end
-      input :object do
-        name :string?
-        email :string?
-        password :string?
-        captcha :string
+      input do
+        type :object do
+          name :string?
+          email :string?
+          password :string?
+          captcha :string
+        end
       end
       output :success do
         status 200
