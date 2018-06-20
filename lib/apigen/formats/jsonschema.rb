@@ -25,16 +25,9 @@ module Apigen
           def schema(api, type)
             case type
             when Apigen::ObjectType
-              {
-                'type' => 'object',
-                'properties' => type.properties.map { |n, t| property(api, n, t) }.to_h,
-                'required' => type.properties.reject { |_, t| t.is_a? Apigen::OptionalType }.map { |n, _| n.to_s }
-              }
+              object_schema(api, type)
             when Apigen::ArrayType
-              {
-                'type' => 'array',
-                'items' => schema(api, type.type)
-              }
+              array_schema(api, type)
             when Apigen::OptionalType
               raise 'OptionalType fields are only supported within object types.'
             when :string
@@ -56,10 +49,25 @@ module Apigen
             end
           end
 
-          def property(api, name, type)
+          def object_schema(api, object_type)
+            {
+              'type' => 'object',
+              'properties' => object_type.properties.map { |name, type| object_property(api, name, type) }.to_h,
+              'required' => object_type.properties.reject { |_name, type| type.is_a? Apigen::OptionalType }.map { |name, _type| name.to_s }
+            }
+          end
+
+          def object_property(api, name, type)
             # A property is never optional, because we specify which are required on the schema itself.
             actual_type = type.is_a?(Apigen::OptionalType) ? type.type : type
             [name.to_s, schema(api, actual_type)]
+          end
+
+          def array_schema(api, array_type)
+            {
+              'type' => 'array',
+              'items' => schema(api, array_type.type)
+            }
           end
         end
       end
