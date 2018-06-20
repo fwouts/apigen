@@ -11,7 +11,10 @@ Read the project overview: https://medium.com/@fwouts/project-openapi-definition
 
 ## Example
 
-For a full-fledged 
+For a full-fledged example, see [example.rb](https://github.com/zenclabs/apigen/blob/master/spec/apigen/formats/example.rb) and corresponding tests:
+- [Swagger (OpenAPI 2)](https://github.com/zenclabs/apigen/blob/master/spec/apigen/formats/swagger_spec.rb)
+- [OpenAPI 3](https://github.com/zenclabs/apigen/blob/master/spec/apigen/formats/openapi_spec.rb)
+- [JSON Schema](https://github.com/zenclabs/apigen/blob/master/spec/apigen/formats/jsonschema_spec.rb)
 
 ```ruby
 require 'apigen/rest'
