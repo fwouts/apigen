@@ -3,6 +3,8 @@
 require './lib/apigen/util'
 
 module Apigen
+  PRIMARY_TYPES = Set.new %i[string int32 bool void]
+
   ##
   # ModelRegistry is where all model definitions are stored.
   class ModelRegistry
@@ -27,13 +29,7 @@ module Apigen
 
     def check_type(type)
       if type.is_a? Symbol
-        case type
-        # rubocop:disable Lint/EmptyWhen
-        when :string, :int32, :bool, :void
-        else
-          # rubocop:enable Lint/EmptyWhen
-          raise "Unknown type :#{type}." unless @models.key? type
-        end
+        raise "Unknown type :#{type}." unless @models.key?(type) || PRIMARY_TYPES.include?(type)
       elsif type.is_a?(ObjectType) || type.is_a?(ArrayType) || type.is_a?(OptionalType)
         type.validate self
       else
@@ -86,13 +82,7 @@ module Apigen
       else
         type = shape
       end
-      if optional
-        optional_type = OptionalType.new
-        optional_type.type type
-        optional_type
-      else
-        type
-      end
+      optional ? OptionalType.new(type) : type
     end
 
     def validate(model_registry)
@@ -155,8 +145,8 @@ module Apigen
   ##
   # ArrayType represents an array type, with a given item type.
   class ArrayType
-    def initialize
-      @type = nil
+    def initialize(type = nil)
+      @type = type
     end
 
     def type(item_type = nil, &block)
@@ -186,8 +176,8 @@ module Apigen
   ##
   # OptionalType represents a type whose value may be absent.
   class OptionalType
-    def initialize
-      @type = nil
+    def initialize(type = nil)
+      @type = type
     end
 
     def type(item_type = nil, &block)
