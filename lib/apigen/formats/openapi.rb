@@ -43,89 +43,86 @@ module Apigen
             hash = {}
             api.endpoints.each do |endpoint|
               parameters = []
-              endpoint.path_parameters.properties.each do |k, v|
-                parameters << {
-                  'in' => 'path',
-                  'name' => k.to_s,
-                  'required' => true,
-                  'schema' => type(api, v)
-                }
-              end
-              endpoint.query_parameters.properties.each do |k, v|
-                optional = v.is_a?(Apigen::OptionalType)
-                parameter_type = optional ? v.type : v
-                parameters << {
-                  'in' => 'query',
-                  'name' => k.to_s,
-                  'required' => !optional,
-                  'schema' => type(api, parameter_type)
-                }
-              end
-              responses = {}
-              endpoint.outputs.each do |output|
-                response = {
-                  'description' => ''
-                }
-                if output.type != :void
-                  response['content'] = {
-                    'application/json' => {
-                      'schema' => type(api, output.type)
-                    }
-                  }
-                end
-                responses[output.status.to_s] = response
-              end
+              parameters.concat(endpoint.path_parameters.properties.map { |name, type| path_parameter(api, name, type) })
+              parameters.concat(endpoint.query_parameters.properties.map { |name, type| query_parameter(api, name, type) })
+              responses = endpoint.outputs.map { |output| response(api, output) }.to_h
               operation = {
                 'operationId' => endpoint.name.to_s,
                 'description' => '',
                 'parameters' => parameters,
                 'responses' => responses
               }
-              if endpoint.input
-                operation['requestBody'] = {
-                  'required' => true,
-                  'content' => {
-                    'application/json' => {
-                      'schema' => type(api, endpoint.input)
-                    }
-                  }
-                }
-              end
-              hash[endpoint.path] = (hash.key?(endpoint.path) ? hash[endpoint.path] : {}).merge(
-                endpoint.method.to_s => operation
-              )
+              operation['requestBody'] = input(api, endpoint.input) if endpoint.input
+              hash[endpoint.path] ||= {}
+              hash[endpoint.path][endpoint.method.to_s] = operation
             end
             hash
+          end
+
+          def path_parameter(api, name, type)
+            {
+              'in' => 'path',
+              'name' => name.to_s,
+              'required' => true,
+              'schema' => schema(api, type)
+            }
+          end
+
+          def query_parameter(api, name, type)
+            optional = type.is_a?(Apigen::OptionalType)
+            actual_type = optional ? type.type : type
+            {
+              'in' => 'query',
+              'name' => name.to_s,
+              'required' => !optional,
+              'schema' => schema(api, actual_type)
+            }
+          end
+
+          def input(api, type)
+            {
+              'required' => true,
+              'content' => {
+                'application/json' => {
+                  'schema' => schema(api, type)
+                }
+              }
+            }
+          end
+
+          def response(api, output)
+            response = {}
+            response['description'] = ''
+            if output.type != :void
+              response['content'] = {
+                'application/json' => {
+                  'schema' => schema(api, output.type)
+                }
+              }
+            end
+            [output.status.to_s, response]
           end
 
           def definitions(api)
             hash = {}
             api.models.each do |key, model|
-              hash[key.to_s] = type api, model.type
+              hash[key.to_s] = schema(api, model.type)
             end
             hash
           end
 
-          def type(api, type)
+          def schema(api, type)
             case type
             when Apigen::ObjectType
-              required_fields = []
-              type.properties.each do |k, v|
-                required_fields << k.to_s unless v.is_a? Apigen::OptionalType
-              end
               {
                 'type' => 'object',
-                'properties' => type.properties.map do |k, v|
-                  # We're already reflecting the fact that fields are optional with required fields.
-                  property_type = v.is_a?(Apigen::OptionalType) ? v.type : v
-                  [k.to_s, type(api, property_type)]
-                end.to_h,
-                'required' => required_fields
+                'properties' => type.properties.map { |n, t| property(api, n, t) }.to_h,
+                'required' => type.properties.reject { |_, t| t.is_a? Apigen::OptionalType }.map { |n, _| n.to_s }
               }
             when Apigen::ArrayType
               {
                 'type' => 'array',
-                'items' => type(api, type.type)
+                'items' => schema(api, type.type)
               }
             when Apigen::OptionalType
               raise 'OptionalType fields are only supported within object types.'
@@ -146,6 +143,12 @@ module Apigen
               return { '$ref' => "#/components/schemas/#{type}" } if api.models.key? type
               raise "Unsupported type: #{type}."
             end
+          end
+
+          def property(api, name, type)
+            # A property is never optional, because we specify which are required on the schema itself.
+            actual_type = type.is_a?(Apigen::OptionalType) ? type.type : type
+            [name.to_s, schema(api, actual_type)]
           end
         end
       end

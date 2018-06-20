@@ -16,36 +16,24 @@ module Apigen
           private
 
           def definitions(api)
-            hash = {
+            {
               '$schema' => 'http://json-schema.org/draft-07/schema#',
-              'definitions' => {}
+              'definitions' => api.models.map { |key, model| [key.to_s, schema(api, model.type)] }.to_h
             }
-            api.models.each do |key, model|
-              hash['definitions'][key.to_s] = type api, model.type
-            end
-            hash
           end
 
-          def type(api, type)
+          def schema(api, type)
             case type
             when Apigen::ObjectType
-              required_fields = []
-              type.properties.each do |k, v|
-                required_fields << k.to_s unless v.is_a? Apigen::OptionalType
-              end
               {
                 'type' => 'object',
-                'properties' => type.properties.map do |k, v|
-                  # We're already reflecting the fact that fields are optional with required fields.
-                  property_type = v.is_a?(Apigen::OptionalType) ? v.type : v
-                  [k.to_s, type(api, property_type)]
-                end.to_h,
-                'required' => required_fields
+                'properties' => type.properties.map { |n, t| property(api, n, t) }.to_h,
+                'required' => type.properties.reject { |_, t| t.is_a? Apigen::OptionalType }.map { |n, _| n.to_s }
               }
             when Apigen::ArrayType
               {
                 'type' => 'array',
-                'items' => type(api, type.type)
+                'items' => schema(api, type.type)
               }
             when Apigen::OptionalType
               raise 'OptionalType fields are only supported within object types.'
@@ -66,6 +54,12 @@ module Apigen
               return { '$ref' => "#/definitions/#{type}" } if api.models.key? type
               raise "Unsupported type: #{type}."
             end
+          end
+
+          def property(api, name, type)
+            # A property is never optional, because we specify which are required on the schema itself.
+            actual_type = type.is_a?(Apigen::OptionalType) ? type.type : type
+            [name.to_s, schema(api, actual_type)]
           end
         end
       end
