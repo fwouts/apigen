@@ -11,21 +11,83 @@ Read the project overview: https://medium.com/@fwouts/project-openapi-definition
 
 ## Example
 
+For a full-fledged 
+
 ```ruby
 require 'apigen/rest'
 
 # Start an API declaration.
 api = Apigen::Rest::Api.new
+api.description 'Making APIs great again'
 
-# Declare a REST endpoint /users/:id which takes no input
-# and returns either a User or a failure.
-api.endpoint :get_user do
-  description "Fetches the detail of a specific user"
-  path "/users/{id}" do
+api.endpoint :list_users do
+  description 'Returns a list of users'
+  method :get
+  path '/users'
+  query do
+    include_admin :bool, 'Whether to include administrators or not'
+    order :string? do
+      description 'A sorting order'
+      example do
+        'name ASC'
+      end
+    end
+  end
+  output :success do
+    description 'Success'
+    status 200
+    type :array do
+      type :user
+    end
+  end
+end
+
+api.endpoint :create_user do
+  description 'Creates a user'
+  method :post
+  path '/users'
+  input do
+    type :object do
+      name :string do
+        description 'The name of the user'
+        example 'John'
+      end
+      email :string, "The user's email address"
+      password :string, 'A password in plain text' do
+        example 'foobar123'
+      end
+      captcha :string
+    end
+  end
+  output :success do
+    status 200
+    description 'Success'
+    type :user
+  end
+  output :failure do
+    status 401
+    description 'Unauthorised failure'
+    type :string
+  end
+end
+
+api.endpoint :update_user do
+  method :put
+  path '/users/{id}' do
     id :string
   end
-  query do
-    include_children :bool, "Whether to include children or not"
+  input do
+    description "Updates a user's properties. A subset of properties can be provided."
+    example(
+      'name' => 'Frank',
+      'captcha' => 'AB123'
+    )
+    type :object do
+      name :string?
+      email :string?
+      password :string?
+      captcha :string
+    end
   end
   output :success do
     status 200
@@ -37,32 +99,40 @@ api.endpoint :get_user do
   end
 end
 
-# Declare what a User is.
+api.endpoint :delete_user do
+  method :delete
+  path '/users/{id}' do
+    id :string
+  end
+  output :success do
+    status 200
+    type :void
+  end
+  output :failure do
+    status 401
+    type :string
+  end
+end
+
 api.model :user do
-  description "A user"
-  example (
-    'name' => 'Frank',
-    'children' => [],
+  description 'A user'
+  example(
+    'id' => 123,
+    'profile' => {
+      'name' => 'Frank',
+      'avatar_url' => 'https://google.com/avatar.png'
+    }
   )
-  # User is a object (multiple properties).
   type :object do
-    # User.name is a mandatory string.
+    id :int32
+    profile :user_profile
+  end
+end
+
+api.model :user_profile do
+  type :object do
     name :string
-    # User.age is an optional integer.
-    age :int32?
-    # Alternatively, use:
-    # age :optional do
-    #   type :int32
-    # end
-    # User.children is an array of users.
-    children :array do
-      type :user
-    end
-    # User.additional_info is an optional object.
-    additional_info :object? do
-      first_name :string
-      last_name :string
-    end
+    avatar_url :string
   end
 end
 
