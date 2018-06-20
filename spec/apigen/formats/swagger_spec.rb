@@ -6,8 +6,8 @@ require 'yaml'
 
 describe Apigen::Formats::Swagger::V2 do
   it 'generates expected output' do
-    generated = YAML.safe_load(Apigen::Formats::Swagger::V2.generate(Apigen.example))
-    expect(generated).to eq(YAML.safe_load(<<~YAML)
+    generated = Apigen::Formats::Swagger::V2.generate(Apigen.example)
+    expect(generated).to eq(<<~YAML)
       ---
       swagger: '2.0'
       info:
@@ -33,14 +33,14 @@ describe Apigen::Formats::Swagger::V2 do
           get:
             description: ''
             parameters:
-              - in: query
-                name: include_admin
-                required: true
-                type: boolean
-              - in: query
-                name: order
-                required: false
-                type: string
+            - in: query
+              name: include_admin
+              required: true
+              type: boolean
+            - in: query
+              name: order
+              required: false
+              type: string
             responses:
               '200':
                 description: ''
@@ -149,6 +149,5 @@ describe Apigen::Formats::Swagger::V2 do
           - name
           - avatar_url
     YAML
-                           )
   end
 end

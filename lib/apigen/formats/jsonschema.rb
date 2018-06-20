@@ -10,7 +10,7 @@ module Apigen
       module Draft7
         class << self
           def generate(api)
-            definitions(api).to_json
+            JSON.pretty_generate definitions(api)
           end
 
           private

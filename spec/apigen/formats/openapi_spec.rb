@@ -6,8 +6,8 @@ require 'yaml'
 
 describe Apigen::Formats::OpenAPI::V3 do
   it 'generates expected output' do
-    generated = YAML.safe_load(Apigen::Formats::OpenAPI::V3.generate(Apigen.example))
-    expect(generated).to eq(YAML.safe_load(<<~YAML)
+    generated = Apigen::Formats::OpenAPI::V3.generate(Apigen.example)
+    expect(generated).to eq(<<~YAML)
       ---
       openapi: 3.0.0
       info:
@@ -27,16 +27,16 @@ describe Apigen::Formats::OpenAPI::V3 do
             operationId: list_users
             description: ''
             parameters:
-              - in: query
-                name: include_admin
-                required: true
-                schema:
-                  type: boolean
-              - in: query
-                name: order
-                required: false
-                schema:
-                  type: string
+            - in: query
+              name: include_admin
+              required: true
+              schema:
+                type: boolean
+            - in: query
+              name: order
+              required: false
+              schema:
+                type: string
             responses:
               '200':
                 description: ''
@@ -165,6 +165,5 @@ describe Apigen::Formats::OpenAPI::V3 do
             - name
             - avatar_url
     YAML
-                           )
   end
 end
