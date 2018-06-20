@@ -6,8 +6,8 @@ require 'json'
 
 describe Apigen::Formats::JsonSchema::Draft7 do
   it 'generates expected output' do
-    generated = JSON.parse(Apigen::Formats::JsonSchema::Draft7.generate(Apigen.example))
-    expect(generated).to eq(JSON.parse(<<~JSON)
+    generated = Apigen::Formats::JsonSchema::Draft7.generate(Apigen.example).strip
+    expect(generated).to eq(<<~JSON.strip)
       {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "definitions": {
@@ -45,6 +45,5 @@ describe Apigen::Formats::JsonSchema::Draft7 do
         }
       }
     JSON
-                           )
   end
 end
