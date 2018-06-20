@@ -98,17 +98,7 @@ module Apigen
         return @path unless path
         @path = path
         if PATH_PARAMETER_REGEX.match path
-          block = {} unless block_given?
-          @path_parameters.instance_eval(&block)
-          parameters_in_url = path.scan(PATH_PARAMETER_REGEX).map do |parameter_str, _|
-            parameter_str.to_sym
-          end
-          parameters_in_url.each do |parameter|
-            raise "Path parameter :#{parameter} in path #{@path} is not defined." unless @path_parameters.properties.key? parameter
-          end
-          @path_parameters.properties.each do |parameter, _type|
-            raise "Parameter :#{parameter} does not appear in path #{@path}." unless parameters_in_url.include? parameter
-          end
+          set_path_parameters(path, &block)
         elsif block_given?
           raise 'A path block was provided but no URL parameter was found.'
         end
@@ -138,10 +128,45 @@ module Apigen
       end
 
       def validate(model_registry)
+        validate_properties
+        validate_input(model_registry)
+        validate_path_parameters(model_registry)
+        validate_outputs(model_registry)
+      end
+
+      def to_s
+        repr = "#{@name}: #{@input}"
+        @outputs.each do |output|
+          repr += "\n-> #{output}"
+        end
+        repr
+      end
+
+      private
+
+      def set_path_parameters(path, &block)
+        block = {} unless block_given?
+        @path_parameters.instance_eval(&block)
+        expected_parameters = path.scan(PATH_PARAMETER_REGEX).map { |parameter, _| parameter.to_sym }
+        ensure_parameters_all_defined(expected_parameters)
+      end
+
+      def ensure_parameters_all_defined(expected_parameters)
+        expected_parameters.each do |parameter|
+          raise "Path parameter :#{parameter} in path #{@path} is not defined." unless @path_parameters.properties.key? parameter
+        end
+        @path_parameters.properties.each do |parameter, _type|
+          raise "Parameter :#{parameter} does not appear in path #{@path}." unless expected_parameters.include? parameter
+        end
+      end
+
+      def validate_properties
         raise 'One of the endpoints is missing a name.' unless @name
         raise "Use `method :get/post/put/delete` to set an HTTP method for :#{@name}." unless @method
         raise "Use `path \"/some/path\"` to assign a path to :#{@name}." unless @path
-        @path_parameters.validate model_registry
+      end
+
+      def validate_input(model_registry)
         case @method
         when :put, :post
           raise "Use `input :typename` to assign an input type to :#{@name}." unless @input
@@ -151,18 +176,17 @@ module Apigen
         when :delete
           raise "Endpoint :#{@name} with method DELETE cannot accept an input payload." if @input
         end
+      end
+
+      def validate_path_parameters(model_registry)
+        @path_parameters.validate model_registry
+      end
+
+      def validate_outputs(model_registry)
         raise "Endpoint :#{@name} does not declare any outputs" if @outputs.empty?
         @outputs.each do |output|
           output.validate model_registry
         end
-      end
-
-      def to_s
-        repr = "#{@name}: #{@input}"
-        @outputs.each do |output|
-          repr += "\n-> #{output}"
-        end
-        repr
       end
     end
 
@@ -185,14 +209,20 @@ module Apigen
       end
 
       def validate(model_registry)
-        raise 'One of the outputs is missing a name.' unless @name
-        raise "Use `status [code]` to assign a status code to :#{@name}." unless @status
-        raise "Use `type :typename` to assign a type to :#{@name}." unless @type
+        validate_properties
         model_registry.check_type @type
       end
 
       def to_s
         "#{@name} #{@status} #{@type}"
+      end
+
+      private
+
+      def validate_properties
+        raise 'One of the outputs is missing a name.' unless @name
+        raise "Use `status [code]` to assign a status code to :#{@name}." unless @status
+        raise "Use `type :typename` to assign a type to :#{@name}." unless @type
       end
     end
   end
