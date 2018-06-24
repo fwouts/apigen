@@ -9,6 +9,7 @@ Gem::Specification.new do |s|
   s.authors     = ['Francois Wouts']
   s.email       = 'f@zenc.io'
   s.files       = [
+    'lib/apigen/migration.rb',
     'lib/apigen/model.rb',
     'lib/apigen/rest.rb',
     'lib/apigen/util.rb',

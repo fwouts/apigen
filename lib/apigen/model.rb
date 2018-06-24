@@ -16,6 +16,7 @@ module Apigen
     end
 
     def model(name, &block)
+      raise "Model :#{name} is declared twice." if @models.key? name
       model = Apigen::Model.new name
       raise 'You must pass a block when calling `model`.' unless block_given?
       model.instance_eval(&block)
@@ -95,6 +96,11 @@ module Apigen
       model_registry.check_type @type
     end
 
+    def update_object_properties(&block)
+      raise "#{@name} is not an object type" unless @type.is_a? ObjectType
+      @type.instance_eval(&block)
+    end
+
     def to_s
       @type.to_s
     end
@@ -107,6 +113,16 @@ module Apigen
 
     def initialize
       @properties = {}
+    end
+
+    def add(&block)
+      instance_eval(&block)
+    end
+
+    def remove(*property_names)
+      property_names.each do |property_name|
+        raise "Cannot remove nonexistent property :#{property_name}." unless @properties.delete(property_name)
+      end
     end
 
     # rubocop:disable Style/MethodMissingSuper

@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative './migration'
 require_relative './model'
 require_relative './util'
 
@@ -13,6 +14,7 @@ module Apigen
     # Declares an API.
     def self.api(&block)
       api = Api.new
+      raise 'You must a block when calling `api`.' unless block_given?
       api.instance_eval(&block)
       api.validate
       api
@@ -33,8 +35,10 @@ module Apigen
       ##
       # Declares a specific endpoint.
       def endpoint(name, &block)
+        raise "Endpoint :#{name} is declared twice." if @endpoints.find { |e| e.name == name }
         endpoint = Endpoint.new name
         @endpoints << endpoint
+        raise 'You must pass a block when calling `endpoint`.' unless block_given?
         endpoint.instance_eval(&block)
       end
 
@@ -53,6 +57,10 @@ module Apigen
         @endpoints.each do |e|
           e.validate @model_registry
         end
+      end
+
+      def migrate(*migration_classes)
+        migration_classes.each { |klass| klass.new(self).up }
       end
 
       def to_s
@@ -111,7 +119,7 @@ module Apigen
       #
       # Declares query parameters.
       def query(&block)
-        raise 'A block must be passed to define query properties.' unless block_given?
+        raise 'You must pass a block when calling `query`.' unless block_given?
         @query_parameters.instance_eval(&block)
       end
 
@@ -126,8 +134,20 @@ module Apigen
       ##
       # Declares the output of an endpoint for a given status code.
       def output(name, &block)
+        raise "Endpoint :#{@name} declares the output :#{name} twice." if @outputs.find { |o| o.name == name }
         output = Output.new name
         @outputs << output
+        raise 'You must pass a block when calling `output`.' unless block_given?
+        output.instance_eval(&block)
+        output
+      end
+
+      ##
+      # Updates an already-declared output.
+      def update_output(name, &block)
+        output = @outputs.find { |o| o.name == name }
+        raise "Endpoint :#{@name} never declares the output :#{name} so it cannot be updated." unless output
+        raise 'You must pass a block when calling `update_output`.' unless block_given?
         output.instance_eval(&block)
         output
       end
@@ -232,6 +252,7 @@ module Apigen
     ##
     # Output is the response type associated with a specific status code for an API endpoint.
     class Output
+      attr_reader :name
       attribute_setter_getter :status
       attribute_setter_getter :description
       attribute_setter_getter :example
