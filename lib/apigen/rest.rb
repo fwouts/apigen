@@ -111,7 +111,7 @@ module Apigen
       #
       # Declares query parameters.
       def query(&block)
-        raise 'A block must be passed to define query fields.' unless block_given?
+        raise 'A block must be passed to define query properties.' unless block_given?
         @query_parameters.instance_eval(&block)
       end
 

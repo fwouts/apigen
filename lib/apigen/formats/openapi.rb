@@ -135,7 +135,7 @@ module Apigen
             when Apigen::ArrayType
               array_schema(api, type)
             when Apigen::OptionalType
-              raise 'OptionalType fields are only supported within object types.'
+              raise 'Optional types are only supported within object types.'
             when :string
               {
                 'type' => 'string'
