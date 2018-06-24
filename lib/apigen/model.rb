@@ -101,7 +101,7 @@ module Apigen
   end
 
   ##
-  # ObjectType represents an object type, with specific fields.
+  # ObjectType represents an object type, with specific properties.
   class ObjectType
     attr_reader :properties
 
@@ -110,10 +110,10 @@ module Apigen
     end
 
     # rubocop:disable Style/MethodMissingSuper
-    def method_missing(field_name, *args, &block)
-      raise "Field :#{field_name} is defined multiple times." if @properties.key? field_name
-      field_type = args[0]
-      field_description = args[1]
+    def method_missing(property_name, *args, &block)
+      raise "Property :#{property_name} is defined multiple times." if @properties.key? property_name
+      property_type = args[0]
+      property_description = args[1]
       block_called = false
       if block_given?
         block_wrapper = lambda do
@@ -122,11 +122,11 @@ module Apigen
         end
       end
       property = ObjectProperty.new(
-        Apigen::Model.type(field_type, &block_wrapper),
-        field_description
+        Apigen::Model.type(property_type, &block_wrapper),
+        property_description
       )
       property.instance_eval(&block) if block_given? && !block_called
-      @properties[field_name] = property
+      @properties[property_name] = property
     end
     # rubocop:enable Style/MethodMissingSuper
 
