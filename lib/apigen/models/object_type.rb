@@ -35,11 +35,18 @@ module Apigen
           yield
         end
       end
+      if property_type.to_s.end_with? '?'
+        property_type = property_type[0..-2].to_sym
+        required = false
+      else
+        required = true
+      end
       property = ObjectProperty.new(
         Apigen::Model.type(property_type, &block_wrapper),
         property_description
       )
       property.instance_eval(&block) if block_given? && !block_called
+      property.required = required
       @properties[property_name] = property
     end
     # rubocop:enable Style/MethodMissingSuper
