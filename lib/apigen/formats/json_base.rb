@@ -30,7 +30,9 @@ module Apigen
         when Apigen::ArrayType
           array_schema(api, type)
         when Apigen::OneofType
-          oneof_schema(api, type)
+          oneof_schema(type)
+        when Apigen::EnumType
+          enum_schema(type)
         when Apigen::PrimaryType
           primary_schema(type)
         when Apigen::ReferenceType
@@ -59,7 +61,7 @@ module Apigen
         }
       end
 
-      def oneof_schema(_api, oneof_type)
+      def oneof_schema(oneof_type)
         schema = {
           'oneOf' => oneof_type.mapping.keys.map { |model_name| { '$ref' => model_ref(model_name) } }
         }
@@ -70,6 +72,13 @@ module Apigen
           }
         end
         schema
+      end
+
+      def enum_schema(enum_type)
+        {
+          'type' => 'string',
+          'enum' => enum_type.values
+        }
       end
 
       def primary_schema(primary_type)
