@@ -8,15 +8,7 @@ Gem::Specification.new do |s|
   s.description = 'A simple DSL to generate OpenAPI and/or JSON Schema definitions in Ruby.'
   s.authors     = ['Francois Wouts']
   s.email       = 'f@zenc.io'
-  s.files       = [
-    'lib/apigen/migration.rb',
-    'lib/apigen/model.rb',
-    'lib/apigen/rest.rb',
-    'lib/apigen/util.rb',
-    'lib/apigen/formats/jsonschema.rb',
-    'lib/apigen/formats/openapi.rb',
-    'lib/apigen/formats/swagger.rb'
-  ]
+  s.files       = Dir.glob('lib/**/*.rb')
   s.homepage    = 'https://rubygems.org/gems/apigen'
   s.license     = 'MIT'
 end
