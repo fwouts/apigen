@@ -68,15 +68,22 @@ module Apigen
     def repr(indent)
       repr = '{'
       @properties.each do |key, property|
-        type_repr = if property.type.respond_to? :repr
-                      property.type.repr(indent + '  ')
-                    else
-                      property.type.to_s
-                    end
-        repr += "\n#{indent}  #{key}: #{type_repr}"
+        repr += "\n#{indent}  #{property_repr(key, property)}"
       end
       repr += "\n#{indent}}"
       repr
+    end
+
+    private
+
+    def property_repr(key, property)
+      type_repr = if property.type.respond_to? :repr
+                    property.type.repr(indent + '  ')
+                  else
+                    property.type.to_s
+                  end
+      type_repr += '?' unless property.required?
+      "#{key}: #{type_repr}"
     end
   end
 end

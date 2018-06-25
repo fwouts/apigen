@@ -19,5 +19,9 @@ module Apigen
     def ==(other)
       other.is_a?(ReferenceType) && other.model_name == model_name
     end
+
+    def to_s
+      @model_name
+    end
   end
 end
