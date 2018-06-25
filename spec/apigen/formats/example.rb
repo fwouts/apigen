@@ -126,6 +126,10 @@ module Apigen
       type :object do
         id :int32
         profile :user_profile
+        has_super_powers :enum do
+          value 'yes'
+          value 'no'
+        end
       end
     end
 

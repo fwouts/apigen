@@ -1,10 +1,6 @@
 # frozen_string_literal: true
 
 require_relative './model'
-require_relative './array_type'
-require_relative './object_type'
-require_relative './primary_type'
-require_relative './oneof_type'
 
 module Apigen
   ##

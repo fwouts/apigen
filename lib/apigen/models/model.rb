@@ -2,6 +2,7 @@
 
 require_relative '../util'
 require_relative './array_type'
+require_relative './enum_type'
 require_relative './object_type'
 require_relative './oneof_type'
 require_relative './primary_type'
@@ -41,6 +42,10 @@ module Apigen
         oneof = OneofType.new
         oneof.instance_eval(&block)
         oneof
+      when :enum
+        enum = EnumType.new
+        enum.instance_eval(&block)
+        enum
       else
         raise "A block should not be provided with :#{shape}." if block_given?
         primary_or_reference_type(shape)

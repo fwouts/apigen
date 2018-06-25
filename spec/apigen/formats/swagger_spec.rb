@@ -162,9 +162,15 @@ describe Apigen::Formats::Swagger::V2 do
               format: int32
             profile:
               "$ref": "#/definitions/user_profile"
+            has_super_powers:
+              type: string
+              enum:
+              - 'yes'
+              - 'no'
           required:
           - id
           - profile
+          - has_super_powers
           description: A user
           example:
             id: 123
