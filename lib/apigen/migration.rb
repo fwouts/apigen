@@ -19,8 +19,12 @@ module Apigen
 
     def update_endpoint(name, &block)
       endpoint = @api.endpoints.find { |e| e.name == name }
-      raise "No such endpoint #{name}." unless endpoint
-      raise 'You must pass a block when calling `update_endpoint`.' unless block_given?
+      error = if !endpoint
+                "No such endpoint #{name}."
+              elsif !block_given?
+                'You must pass a block when calling `update_endpoint`.'
+              end
+      raise error unless error.nil?
       endpoint.instance_eval(&block)
     end
 
@@ -39,8 +43,12 @@ module Apigen
 
     def update_model(name, &block)
       model = @api.models[name]
-      raise "No such model :#{name}." unless model
-      raise 'You must pass a block when calling `update_model`.' unless block_given?
+      error = if !model
+                "No such model :#{name}."
+              elsif !block_given?
+                'You must pass a block when calling `update_model`.'
+              end
+      raise error unless error.nil?
       model.instance_eval(&block)
     end
 

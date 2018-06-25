@@ -16,18 +16,7 @@ module Apigen
             # TODO: Allow overriding any of the hardcoded elements.
             {
               'swagger' => '2.0',
-              'info' => {
-                'version' => '1.0.0',
-                'title' => 'API',
-                'description' => api.description,
-                'termsOfService' => '',
-                'contact' => {
-                  'name' => ''
-                },
-                'license' => {
-                  'name' => ''
-                }
-              },
+              'info' => info(api),
               'host' => 'localhost',
               'basePath' => '/',
               'schemes' => %w[
@@ -47,6 +36,21 @@ module Apigen
 
           private
 
+          def info(api)
+            {
+              'version' => '1.0.0',
+              'title' => 'API',
+              'description' => api.description,
+              'termsOfService' => '',
+              'contact' => {
+                'name' => ''
+              },
+              'license' => {
+                'name' => ''
+              }
+            }
+          end
+
           def paths(api)
             hash = {}
             api.endpoints.each do |endpoint|
@@ -60,7 +64,7 @@ module Apigen
                 'parameters' => parameters,
                 'responses' => responses
               }
-              hash[endpoint.path][endpoint.method.to_s]['description'] = endpoint.description unless endpoint.description.nil?
+              add_description(hash[endpoint.path][endpoint.method.to_s], endpoint.description)
             end
             hash
           end
@@ -88,15 +92,15 @@ module Apigen
               'required' => true,
               'schema' => schema(api, property.type)
             }
-            parameter['description'] = property.description unless property.description.nil?
-            parameter['example'] = property.example unless property.example.nil?
+            add_description(parameter, property.description)
+            add_example(parameter, property.example)
             parameter
           end
 
           def response(api, output)
             response = {}
-            response['description'] = output.description unless output.description.nil?
-            response['example'] = output.example unless output.example.nil?
+            add_description(response, output.description)
+            add_example(response, output.example)
             response['schema'] = schema(api, output.type) if output.type != Apigen::PrimaryType.new(:void)
             [output.status.to_s, response]
           end

@@ -13,9 +13,13 @@ module Apigen
     end
 
     def model(name, &block)
-      raise "Model :#{name} is declared twice." if @models.key? name
+      error = if @models.key? name
+                "Model :#{name} is declared twice."
+              elsif !block_given?
+                'You must pass a block when calling `model`.'
+              end
+      raise error unless error.nil?
       model = Apigen::Model.new name
-      raise 'You must pass a block when calling `model`.' unless block_given?
       model.instance_eval(&block)
       @models[model.name] = model
     end

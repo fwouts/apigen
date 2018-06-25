@@ -36,9 +36,14 @@ module Apigen
       private
 
       def validate_properties
-        raise 'One of the outputs is missing a name.' unless @name
-        raise "Use `status [code]` to assign a status code to :#{@name}." unless @status
-        raise "Use `type :typename` to assign a type to :#{@name}." unless @type
+        error = if !@name
+                  'One of the outputs is missing a name.'
+                elsif !@status
+                  "Use `status [code]` to assign a status code to :#{@name}."
+                elsif !@status
+                  "Use `type :typename` to assign a type to :#{@name}."
+                end
+        raise error unless error.nil?
       end
     end
   end

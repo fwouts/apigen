@@ -62,8 +62,12 @@ module Apigen
     end
 
     def validate(model_registry)
-      raise 'One of the models is missing a name.' unless @name
-      raise "Use `type :model_type [block]` to assign a type to :#{@name}." unless @type
+      error = if !@name
+                'One of the models is missing a name.'
+              elsif !@type
+                "Use `type :model_type [block]` to assign a type to :#{@name}."
+              end
+      raise error unless error.nil?
       model_registry.check_type @type
     end
 

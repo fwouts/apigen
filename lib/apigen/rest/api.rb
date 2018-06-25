@@ -33,10 +33,14 @@ module Apigen
       ##
       # Declares a specific endpoint.
       def endpoint(name, &block)
-        raise "Endpoint :#{name} is declared twice." if @endpoints.find { |e| e.name == name }
+        error = if @endpoints.find { |e| e.name == name }
+                  "Endpoint :#{name} is declared twice."
+                elsif !block_given?
+                  'You must pass a block when calling `endpoint`.'
+                end
+        raise error unless error.nil?
         endpoint = Endpoint.new name
         @endpoints << endpoint
-        raise 'You must pass a block when calling `endpoint`.' unless block_given?
         endpoint.instance_eval(&block)
       end
 
