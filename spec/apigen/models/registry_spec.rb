@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'apigen/model'
+require 'apigen/models/registry'
 
 RSpec.describe Apigen::ModelRegistry do
   it 'allows declaring simple models' do

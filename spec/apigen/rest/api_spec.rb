@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'apigen/rest'
+require 'apigen/rest/api'
 
 RSpec.describe Apigen::Rest do
   it 'records endpoints' do
