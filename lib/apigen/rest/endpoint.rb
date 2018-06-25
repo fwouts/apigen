@@ -128,21 +128,32 @@ module Apigen
       end
 
       def validate_properties
-        raise 'One of the endpoints is missing a name.' unless @name
-        raise "Use `method :get/post/put/delete` to set an HTTP method for :#{@name}." unless @method
-        raise "Use `path \"/some/path\"` to assign a path to :#{@name}." unless @path
+        error = if !@name
+                  'One of the endpoints is missing a name.'
+                elsif !@method
+                  "Use `method :get/post/put/delete` to set an HTTP method for :#{@name}."
+                elsif !@path
+                  "Use `path \"/some/path\"` to assign a path to :#{@name}."
+                end
+        raise error unless error.nil?
       end
 
       def validate_input(model_registry)
         case @method
         when :put, :post
-          raise "Use `input { type :typename }` to assign an input type to :#{@name}." unless @input
-          @input.validate(model_registry)
-        when :get
-          raise "Endpoint :#{@name} with method GET cannot accept an input payload." if @input
-        when :delete
-          raise "Endpoint :#{@name} with method DELETE cannot accept an input payload." if @input
+          validate_required_input(model_registry)
+        when :get, :delete
+          validate_forbidden_input
         end
+      end
+
+      def validate_required_input(model_registry)
+        raise "Use `input { type :typename }` to assign an input type to :#{@name}." unless @input
+        @input.validate(model_registry)
+      end
+
+      def validate_forbidden_input
+        raise "Endpoint :#{@name} with method #{@method.to_s.upcase} cannot accept an input payload." if @input
       end
 
       def validate_path_parameters(model_registry)

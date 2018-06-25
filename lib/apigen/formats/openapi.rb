@@ -54,7 +54,7 @@ module Apigen
                 'parameters' => parameters,
                 'responses' => responses
               }
-              operation['description'] = endpoint.description unless endpoint.description.nil?
+              add_description(operation, endpoint.description)
               operation['requestBody'] = input(api, endpoint.input) if endpoint.input
               hash[endpoint.path] ||= {}
               hash[endpoint.path][endpoint.method.to_s] = operation
@@ -69,8 +69,8 @@ module Apigen
               'required' => true,
               'schema' => schema(api, property.type)
             }
-            parameter['description'] = property.description unless property.description.nil?
-            parameter['example'] = property.example unless property.example.nil?
+            add_description(parameter, property.description)
+            add_example(parameter, property.example)
             parameter
           end
 
@@ -81,8 +81,8 @@ module Apigen
               'required' => property.required?,
               'schema' => schema(api, property.type)
             }
-            parameter['description'] = property.description unless property.description.nil?
-            parameter['example'] = property.example unless property.example.nil?
+            add_description(parameter, property.description)
+            add_example(parameter, property.example)
             parameter
           end
 
@@ -95,15 +95,15 @@ module Apigen
                 }
               }
             }
-            parameter['description'] = property.description unless property.description.nil?
-            parameter['example'] = property.example unless property.example.nil?
+            add_description(parameter, property.description)
+            add_example(parameter, property.example)
             parameter
           end
 
           def response(api, output)
             response = {}
-            response['description'] = output.description unless output.description.nil?
-            response['example'] = output.example unless output.example.nil?
+            add_description(response, output.description)
+            add_example(response, output.example)
             if output.type != Apigen::PrimaryType.new(:void)
               response['content'] = {
                 'application/json' => {

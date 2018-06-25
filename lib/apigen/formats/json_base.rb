@@ -18,8 +18,8 @@ module Apigen
 
       def schema(api, type, description = nil, example = nil)
         schema = schema_without_description(api, type)
-        schema['description'] = description unless description.nil?
-        schema['example'] = example unless example.nil?
+        add_description(schema, description)
+        add_example(schema, example)
         schema
       end
 
@@ -99,6 +99,14 @@ module Apigen
         else
           raise "Unsupported primary type :#{primary_type.shape}."
         end
+      end
+
+      def add_description(hash, description)
+        hash['description'] = description unless description.nil?
+      end
+
+      def add_example(hash, example)
+        hash['example'] = example unless example.nil?
       end
 
       def reference_schema(reference_type)
