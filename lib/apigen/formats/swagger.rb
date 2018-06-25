@@ -97,7 +97,7 @@ module Apigen
             response = {}
             response['description'] = output.description unless output.description.nil?
             response['example'] = output.example unless output.example.nil?
-            response['schema'] = schema(api, output.type) if output.type != :void
+            response['schema'] = schema(api, output.type) if output.type != Apigen::PrimaryType.new(:void)
             [output.status.to_s, response]
           end
 

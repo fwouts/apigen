@@ -9,7 +9,7 @@ RSpec.describe Apigen::ModelRegistry do
       type :string
     end
     expect(registry.models.keys).to eq [:name]
-    expect(registry.models[:name].type).to be :string
+    expect(registry.models[:name].type).to eq Apigen::PrimaryType.new(:string)
   end
 
   it 'allows declaring complex models' do
@@ -54,7 +54,7 @@ RSpec.describe Apigen::ModelRegistry do
     end
     expect do
       registry.validate
-    end.to raise_error 'Unknown type :missing.'
+    end.to raise_error 'Model :missing is not defined.'
   end
 
   it 'validates object models (valid)' do
@@ -79,7 +79,7 @@ RSpec.describe Apigen::ModelRegistry do
     end
     expect do
       registry.validate
-    end.to raise_error 'Unknown type :missing.'
+    end.to raise_error 'Model :missing is not defined.'
   end
 
   it 'validates array models (valid)' do
@@ -104,6 +104,6 @@ RSpec.describe Apigen::ModelRegistry do
     end
     expect do
       registry.validate
-    end.to raise_error 'Unknown type :missing.'
+    end.to raise_error 'Model :missing is not defined.'
   end
 end

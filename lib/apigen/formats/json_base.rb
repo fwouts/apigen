@@ -31,21 +31,11 @@ module Apigen
           array_schema(api, type)
         when Apigen::OneofType
           oneof_schema(api, type)
-        when :string
-          {
-            'type' => 'string'
-          }
-        when :int32
-          {
-            'type' => 'integer',
-            'format' => 'int32'
-          }
-        when :bool
-          {
-            'type' => 'boolean'
-          }
+        when Apigen::PrimaryType
+          primary_schema(type)
+        when Apigen::ReferenceType
+          reference_schema(type)
         else
-          return { '$ref' => model_ref(type) } if api.models.key? type
           raise "Unsupported type: #{type}."
         end
       end
@@ -80,6 +70,30 @@ module Apigen
           }
         end
         schema
+      end
+
+      def primary_schema(primary_type)
+        case primary_type.shape
+        when :string
+          {
+            'type' => 'string'
+          }
+        when :int32
+          {
+            'type' => 'integer',
+            'format' => 'int32'
+          }
+        when :bool
+          {
+            'type' => 'boolean'
+          }
+        else
+          raise "Unsupported primary type :#{primary_type.shape}."
+        end
+      end
+
+      def reference_schema(reference_type)
+        { '$ref' => model_ref(reference_type.model_name) }
       end
     end
   end

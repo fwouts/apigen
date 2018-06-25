@@ -4,7 +4,8 @@ require_relative '../util'
 require_relative './array_type'
 require_relative './object_type'
 require_relative './oneof_type'
-require_relative './primary_types'
+require_relative './primary_type'
+require_relative './reference_type'
 require_relative './registry'
 
 module Apigen
@@ -41,7 +42,11 @@ module Apigen
         oneof.instance_eval(&block)
         oneof
       else
-        shape
+        if PrimaryType.primary?(shape)
+          PrimaryType.new(shape)
+        else
+          ReferenceType.new(shape)
+        end
       end
     end
 
