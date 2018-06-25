@@ -3,6 +3,13 @@
 require 'apigen/models/object_type'
 
 RSpec.describe Apigen::ObjectType do
+  it 'responds to any method' do
+    type = Apigen::ObjectType.new
+    expect(type.respond_to?(:property1)).to be true
+    expect(type.respond_to?(:property2)).to be true
+    expect(type.respond_to?(:property3)).to be true
+  end
+
   it 'adds properties by default' do
     type = Apigen::ObjectType.new
     type.instance_eval do
@@ -59,7 +66,7 @@ RSpec.describe Apigen::ObjectType do
   end
 
   describe '#remove' do
-    it 'removes fields' do
+    it 'removes properties' do
       type = Apigen::ObjectType.new
       type.add do
         first_name :string
@@ -86,7 +93,7 @@ RSpec.describe Apigen::ObjectType do
   describe '#validate' do
     let(:model_registry) { double('model_registry') }
 
-    it 'passes if each field type is valid' do
+    it 'passes if each property type is valid' do
       type = Apigen::ObjectType.new
       type.add do
         first_name :string
@@ -99,7 +106,7 @@ RSpec.describe Apigen::ObjectType do
       type.validate(model_registry)
     end
 
-    it 'fails if one field type is invalid' do
+    it 'fails if one property type is invalid' do
       type = Apigen::ObjectType.new
       type.add do
         first_name :string

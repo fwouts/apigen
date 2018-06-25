@@ -28,7 +28,8 @@ module Apigen
       @type = Model.type shape, &block
     end
 
-    def self.type(shape, &block)
+    def self.type(shape = nil, &block)
+      return type if shape.nil?
       case shape
       when :object
         object = ObjectType.new

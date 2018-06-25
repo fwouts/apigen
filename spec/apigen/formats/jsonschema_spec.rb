@@ -84,4 +84,25 @@ describe Apigen::Formats::JsonSchema::Draft7 do
       }
     JSON
   end
+
+  it 'fails with void type' do
+    api = Apigen::Rest::Api.new
+    api.model :user do
+      type :object do
+        name :void
+      end
+    end
+    expect { Apigen::Formats::JsonSchema::Draft7.generate(api) }.to raise_error 'Unsupported primary type :void.'
+  end
+
+  it 'fails with unknown type' do
+    api = Apigen::Rest::Api.new
+    api.model :user do
+      type :object do
+        name :string
+      end
+    end
+    api.models[:user].type.properties[:name] = Apigen::ObjectProperty.new('not a type')
+    expect { Apigen::Formats::JsonSchema::Draft7.generate(api) }.to raise_error 'Unsupported type: not a type.'
+  end
 end
