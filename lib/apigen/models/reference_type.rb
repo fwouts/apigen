@@ -21,7 +21,7 @@ module Apigen
     end
 
     def to_s
-      @model_name
+      @model_name.to_s
     end
   end
 end

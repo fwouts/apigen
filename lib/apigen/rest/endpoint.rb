@@ -95,10 +95,13 @@ module Apigen
       end
 
       def to_s
-        repr = "#{@name}: #{@input}"
+        repr = "#{@name}:"
+        input_str = @input.to_s
+        repr += " #{input_str}" unless input_str.empty?
         @outputs.each do |output|
           repr += "\n-> #{output}"
         end
+        repr += "\n"
         repr
       end
 
