@@ -20,6 +20,28 @@ RSpec.describe Apigen::Rest do
     expect(api.endpoints[0].name).to be :get_user
   end
 
+  it 'rejects multiple endpoints with same name' do
+    expect do
+      Apigen::Rest.api do
+        endpoint :hello do
+          method :get
+          output :success do
+            status 200
+            type :string
+          end
+        end
+
+        endpoint :hello do
+          method :get
+          output :success do
+            status 200
+            type :string
+          end
+        end
+      end
+    end.to raise_error 'Endpoint :hello is declared twice.'
+  end
+
   it 'requires input for POST endpoints' do
     expect do
       Apigen::Rest.api do
@@ -90,6 +112,24 @@ RSpec.describe Apigen::Rest do
         end
       end
     end.to raise_error 'Endpoint :delete_user with method DELETE cannot accept an input payload.'
+  end
+
+  it 'rejects multiple outputs with same name' do
+    expect do
+      Apigen::Rest.api do
+        endpoint :hello do
+          method :get
+          output :success do
+            status 200
+            type :string
+          end
+          output :success do
+            status 200
+            type :string
+          end
+        end
+      end
+    end.to raise_error 'Endpoint :hello declares the output :success twice.'
   end
 
   it 'validates model registry' do

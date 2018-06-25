@@ -80,6 +80,8 @@ jobs:
           command: |
             cd healthcheck
             bundle exec ruby api.rb
+            # cd -
+            # bundle exec ruby examples/evolution/api.rb
 
   healthcheck-current:
     docker:
@@ -94,7 +96,9 @@ jobs:
             gem build apigen.gemspec
             gem install apigen-*.gem
             cd healthcheck
-            bundle exec ruby api.rb
+            ruby api.rb
+            cd -
+            ruby examples/evolution/api.rb
 
 workflows:
   version: 2
