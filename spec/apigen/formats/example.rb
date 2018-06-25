@@ -26,14 +26,17 @@ module Apigen
       output :success do
         description 'Success'
         status 200
-        type :array do
-          type :oneof do
-            discriminator :type
-            map(
-              user: 'User',
-              admin: 'Admin'
-            )
+        type :object do
+          list :array do
+            type :oneof do
+              discriminator :type
+              map(
+                user: 'User',
+                admin: 'Admin'
+              )
+            end
           end
+          property 'next', :string?
         end
       end
     end

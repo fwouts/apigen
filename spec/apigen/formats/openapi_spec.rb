@@ -46,16 +46,23 @@ describe Apigen::Formats::OpenAPI::V3 do
                 content:
                   application/json:
                     schema:
-                      type: array
-                      items:
-                        oneOf:
-                        - "$ref": "#/components/schemas/user"
-                        - "$ref": "#/components/schemas/admin"
-                        discriminator:
-                          propertyName: type
-                          mapping:
-                            User: "#/components/schemas/user"
-                            Admin: "#/components/schemas/admin"
+                      type: object
+                      properties:
+                        list:
+                          type: array
+                          items:
+                            oneOf:
+                            - "$ref": "#/components/schemas/user"
+                            - "$ref": "#/components/schemas/admin"
+                            discriminator:
+                              propertyName: type
+                              mapping:
+                                User: "#/components/schemas/user"
+                                Admin: "#/components/schemas/admin"
+                        next:
+                          type: string
+                      required:
+                      - list
             description: Returns a list of users
           post:
             operationId: create_user

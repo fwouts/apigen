@@ -24,7 +24,16 @@ module Apigen
     end
 
     # rubocop:disable Style/MethodMissingSuper
-    def method_missing(property_name, property_shape, &block)
+    def method_missing(*args, &block)
+      property(*args, &block)
+    end
+    # rubocop:enable Style/MethodMissingSuper
+
+    def respond_to_missing?(_method_name, _include_private = false)
+      true
+    end
+
+    def property(property_name, property_shape, &block)
       ensure_correctness(property_name, property_shape)
       if property_shape.to_s.end_with? '?'
         property_shape = property_shape[0..-2].to_sym
@@ -35,11 +44,6 @@ module Apigen
       property = ObjectProperty.new(Apigen::Model.type(property_shape, &block))
       property.required = required
       @properties[property_name] = property
-    end
-    # rubocop:enable Style/MethodMissingSuper
-
-    def respond_to_missing?(_method_name, _include_private = false)
-      true
     end
 
     def validate(model_registry)

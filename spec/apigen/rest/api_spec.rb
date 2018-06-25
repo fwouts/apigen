@@ -203,7 +203,9 @@ RSpec.describe Apigen::Rest do
           end
           output :success do
             status 200
-            type :missing
+            type :object do
+              hello :missing
+            end
           end
         end
       end
