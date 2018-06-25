@@ -37,11 +37,13 @@ describe Apigen::Formats::Swagger::V2 do
               required: true
               type: boolean
               description: Whether to include administrators or not
+              example: false
             - in: query
               name: order
               required: false
               type: string
               description: A sorting order
+              example: name ASC
             responses:
               '200':
                 description: Success
@@ -83,6 +85,10 @@ describe Apigen::Formats::Swagger::V2 do
                 - email
                 - password
                 - captcha
+              example:
+                name: John
+                email: johnny@apple.com
+                password: foobar123
             responses:
               '200':
                 description: Success

@@ -42,11 +42,16 @@ module Apigen
         oneof.instance_eval(&block)
         oneof
       else
-        if PrimaryType.primary?(shape)
-          PrimaryType.new(shape)
-        else
-          ReferenceType.new(shape)
-        end
+        raise "A block should not be provided with :#{shape}." if block_given?
+        primary_or_reference_type(shape)
+      end
+    end
+
+    private_class_method def self.primary_or_reference_type(shape)
+      if PrimaryType.primary?(shape)
+        PrimaryType.new(shape)
+      else
+        ReferenceType.new(shape)
       end
     end
 

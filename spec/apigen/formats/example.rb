@@ -14,13 +14,8 @@ module Apigen
       method :get
       path '/users'
       query do
-        include_admin :bool, 'Whether to include administrators or not'
-        order :string? do
-          description 'A sorting order'
-          example do
-            'name ASC'
-          end
-        end
+        include_admin :bool, 'Whether to include administrators or not', false
+        order :string?, 'A sorting order', 'name ASC'
       end
       output :success do
         description 'Success'
@@ -42,15 +37,15 @@ module Apigen
       method :post
       path '/users'
       input do
+        example(
+          'name' => 'John',
+          'email' => 'johnny@apple.com',
+          'password' => 'foobar123'
+        )
         type :object do
-          name :string do
-            description 'The name of the user'
-            example 'John'
-          end
+          name :string, 'The name of the user', 'John'
           email :string, "The user's email address"
-          password :string, 'A password in plain text' do
-            example 'foobar123'
-          end
+          password :string, 'A password in plain text', 'foobar123'
           captcha :string
         end
       end
