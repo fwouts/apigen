@@ -73,15 +73,15 @@ jobs:
           name: install dependencies
           command: |
             cd healthcheck
-            bundle install --jobs=4 --retry=3 --path vendor/bundle
+            gem install apigen
 
       - run:
           name: run health check with latest published gem
           command: |
             cd healthcheck
-            bundle exec ruby api.rb
+            ruby api.rb
             cd -
-            bundle exec ruby examples/evolution/api.rb
+            ruby examples/evolution/api.rb
 
   healthcheck-current:
     docker:
