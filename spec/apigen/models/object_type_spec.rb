@@ -25,16 +25,25 @@ RSpec.describe Apigen::ObjectType do
     expect(type.properties[:age]).to eq(Apigen::ObjectProperty.new(Apigen::PrimaryType.new(:int32)).required(false))
   end
 
-  it 'sets description' do
+  it 'sets description and example' do
     type = Apigen::ObjectType.new
     type.instance_eval do
-      first_name :string, 'First name'
-      last_name :string, 'Last name'
-      age :int32?
+      first_name(:string).explain do
+        description 'First name'
+      end
+      last_name(:string).explain do
+        description 'Last name'
+        example 'Sinatra'
+      end
+      (age :int32?).explain do
+        example 25
+      end
     end
     expect(type.properties[:first_name].description).to eq 'First name'
+    expect(type.properties[:first_name].example).to be nil
     expect(type.properties[:last_name].description).to eq 'Last name'
-    expect(type.properties[:age].description).to be nil
+    expect(type.properties[:last_name].example).to be 'Sinatra'
+    expect(type.properties[:age].example).to eq 25
   end
 
   describe '#add' do

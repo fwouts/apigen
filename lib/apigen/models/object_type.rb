@@ -24,20 +24,16 @@ module Apigen
     end
 
     # rubocop:disable Style/MethodMissingSuper
-    def method_missing(property_name, property_type, property_description = nil, property_example = nil, &block)
+    def method_missing(property_name, property_shape, &block)
       raise "Property :#{property_name} is defined multiple times." if @properties.key? property_name
-      raise "Property type must be a symbol, found #{property_type}." unless property_type.is_a? Symbol
-      if property_type.to_s.end_with? '?'
-        property_type = property_type[0..-2].to_sym
+      raise "Property type must be a symbol, found #{property_shape}." unless property_shape.is_a? Symbol
+      if property_shape.to_s.end_with? '?'
+        property_shape = property_shape[0..-2].to_sym
         required = false
       else
         required = true
       end
-      property = ObjectProperty.new(
-        Apigen::Model.type(property_type, &block),
-        property_description,
-        property_example
-      )
+      property = ObjectProperty.new(Apigen::Model.type(property_shape, &block))
       property.required = required
       @properties[property_name] = property
     end
