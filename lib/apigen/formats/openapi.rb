@@ -72,13 +72,11 @@ module Apigen
           end
 
           def query_parameter(api, name, property)
-            optional = property.type.is_a?(Apigen::OptionalType)
-            actual_type = optional ? property.type.type : property.type
             parameter = {
               'in' => 'query',
               'name' => name.to_s,
-              'required' => !optional,
-              'schema' => schema(api, actual_type)
+              'required' => property.required?,
+              'schema' => schema(api, property.type)
             }
             parameter['description'] = property.description unless property.description.nil?
             parameter['example'] = property.example unless property.example.nil?
@@ -134,8 +132,6 @@ module Apigen
               object_schema(api, type)
             when Apigen::ArrayType
               array_schema(api, type)
-            when Apigen::OptionalType
-              raise 'Optional types are only supported within object types.'
             when Apigen::OneofType
               oneof_schema(api, type)
             when :string
@@ -161,14 +157,12 @@ module Apigen
             {
               'type' => 'object',
               'properties' => object_type.properties.map { |name, property| object_property(api, name, property) }.to_h,
-              'required' => object_type.properties.reject { |_name, property| property.type.is_a? Apigen::OptionalType }.map { |name, _property| name.to_s }
+              'required' => object_type.properties.select { |_name, property| property.required? }.map { |name, _property| name.to_s }
             }
           end
 
           def object_property(api, name, property)
-            # A property is never optional, because we specify which are required on the schema itself.
-            actual_type = property.type.is_a?(Apigen::OptionalType) ? property.type.type : property.type
-            [name.to_s, schema(api, actual_type, property.description, property.example)]
+            [name.to_s, schema(api, property.type, property.description, property.example)]
           end
 
           def array_schema(api, array_type)
