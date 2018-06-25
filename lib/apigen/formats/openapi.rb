@@ -104,7 +104,7 @@ module Apigen
             response = {}
             response['description'] = output.description unless output.description.nil?
             response['example'] = output.example unless output.example.nil?
-            if output.type != :void
+            if output.type != Apigen::PrimaryType.new(:void)
               response['content'] = {
                 'application/json' => {
                   'schema' => schema(api, output.type)

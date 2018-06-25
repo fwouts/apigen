@@ -92,7 +92,7 @@ RSpec.describe Apigen::Migration do
       expect(api.endpoints[0].name).to eq(:list_users)
       expect(api.endpoints[0].outputs.size).to eq(1)
       expect(api.endpoints[0].outputs[0].status).to eq(201)
-      expect(api.endpoints[0].outputs[0].type).to eq(:user)
+      expect(api.endpoints[0].outputs[0].type).to eq(Apigen::ReferenceType.new(:user))
 
       api.migrate(UpdateEndpoint)
       api.validate
@@ -101,7 +101,7 @@ RSpec.describe Apigen::Migration do
       expect(api.endpoints[0].name).to eq(:list_users)
       expect(api.endpoints[0].outputs.size).to eq(1)
       expect(api.endpoints[0].outputs[0].status).to eq(200)
-      expect(api.endpoints[0].outputs[0].type).to eq(:void)
+      expect(api.endpoints[0].outputs[0].type).to eq(Apigen::PrimaryType.new(:void))
     end
 
     it 'refuses to override existing endpoint output' do

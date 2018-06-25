@@ -153,7 +153,7 @@ RSpec.describe Apigen::Rest do
           end
         end
       end
-    end.to raise_error 'Unknown type :missing.'
+    end.to raise_error 'Model :missing is not defined.'
   end
 
   it 'validates methods' do
@@ -189,7 +189,7 @@ RSpec.describe Apigen::Rest do
           end
         end
       end
-    end.to raise_error 'Unknown type :missing.'
+    end.to raise_error 'Model :missing is not defined.'
   end
 
   it 'validates outputs' do
@@ -207,7 +207,7 @@ RSpec.describe Apigen::Rest do
           end
         end
       end
-    end.to raise_error 'Unknown type :missing.'
+    end.to raise_error 'Model :missing is not defined.'
   end
 
   it 'requires all path parameters to be typed' do
@@ -257,6 +257,6 @@ RSpec.describe Apigen::Rest do
           end
         end
       end
-    end.to raise_error 'Unknown type :missing.'
+    end.to raise_error 'Model :missing is not defined.'
   end
 end

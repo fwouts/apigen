@@ -20,9 +20,9 @@ RSpec.describe Apigen::ObjectType do
       last_name :string
       age :int32?
     end
-    expect(type.properties[:first_name]).to eq(Apigen::ObjectProperty.new(:string).required(true))
-    expect(type.properties[:last_name]).to eq(Apigen::ObjectProperty.new(:string).required(true))
-    expect(type.properties[:age]).to eq(Apigen::ObjectProperty.new(:int32).required(false))
+    expect(type.properties[:first_name]).to eq(Apigen::ObjectProperty.new(Apigen::PrimaryType.new(:string)).required(true))
+    expect(type.properties[:last_name]).to eq(Apigen::ObjectProperty.new(Apigen::PrimaryType.new(:string)).required(true))
+    expect(type.properties[:age]).to eq(Apigen::ObjectProperty.new(Apigen::PrimaryType.new(:int32)).required(false))
   end
 
   it 'sets description and example' do
@@ -107,7 +107,7 @@ RSpec.describe Apigen::ObjectType do
       end
 
       allow(model_registry).to receive(:check_type).with(anything).and_return(true)
-      allow(model_registry).to receive(:check_type).with(:int32).and_raise('Error')
+      allow(model_registry).to receive(:check_type).with(Apigen::PrimaryType.new(:int32)).and_raise('Error')
 
       expect do
         type.validate(model_registry)

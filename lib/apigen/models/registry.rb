@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require_relative './model'
-require_relative './primary_types'
 require_relative './array_type'
 require_relative './object_type'
+require_relative './primary_type'
 require_relative './oneof_type'
 
 module Apigen
@@ -31,33 +31,13 @@ module Apigen
     end
 
     def check_type(type)
-      if complex_type?(type)
-        type.validate self
-      else
-        unless primary_type?(type) || reference_type?(type)
-          raise "Unknown type :#{type}."
-        end
-      end
+      type.validate self
     end
 
     def to_s
       @models.map do |key, model|
         "#{key}: #{model}"
       end.join "\n"
-    end
-
-    private
-
-    def complex_type?(type)
-      type.is_a?(ObjectType) || type.is_a?(ArrayType) || type.is_a?(OneofType)
-    end
-
-    def primary_type?(type)
-      Apigen::PRIMARY_TYPES.include?(type)
-    end
-
-    def reference_type?(type)
-      @models.key?(type)
     end
   end
 end
