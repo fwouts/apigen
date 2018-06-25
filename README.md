@@ -28,19 +28,26 @@ api.endpoint :list_users do
   method :get
   path '/users'
   query do
-    include_admin :bool, 'Whether to include administrators or not'
-    order :string? do
+    include_admin(:bool).explain do
+      description 'Whether to include administrators or not'
+      example false
+    end
+    order(:string?).explain do
       description 'A sorting order'
-      example do
-        'name ASC'
-      end
+      example 'name ASC'
     end
   end
   output :success do
     description 'Success'
     status 200
     type :array do
-      type :user
+      type :oneof do
+        discriminator :type
+        map(
+          user: 'User',
+          admin: 'Admin'
+        )
+      end
     end
   end
 end
@@ -50,13 +57,21 @@ api.endpoint :create_user do
   method :post
   path '/users'
   input do
+    example(
+      'name' => 'John',
+      'email' => 'johnny@apple.com',
+      'password' => 'foobar123'
+    )
     type :object do
-      name :string do
+      name(:string).explain do
         description 'The name of the user'
         example 'John'
       end
-      email :string, "The user's email address"
-      password :string, 'A password in plain text' do
+      email(:string).explain do
+        description "The user's email address"
+      end
+      password(:string).explain do
+        description 'A password in plain text'
         example 'foobar123'
       end
       captcha :string
@@ -117,6 +132,16 @@ api.endpoint :delete_user do
   end
 end
 
+api.model :person do
+  type :oneof do
+    discriminator :type
+    map(
+      user: 'User',
+      admin: 'Admin'
+    )
+  end
+end
+
 api.model :user do
   description 'A user'
   example(
@@ -129,6 +154,10 @@ api.model :user do
   type :object do
     id :int32
     profile :user_profile
+    has_super_powers :enum do
+      value 'yes'
+      value 'no'
+    end
   end
 end
 
@@ -136,6 +165,13 @@ api.model :user_profile do
   type :object do
     name :string
     avatar_url :string
+  end
+end
+
+api.model :admin do
+  description 'An admin'
+  type :object do
+    name :string
   end
 end
 

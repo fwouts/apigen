@@ -27,6 +27,11 @@ module Apigen
       @required
     end
 
+    def explain(&block)
+      raise 'You must pass a block to `explain`.' unless block_given?
+      instance_eval(&block)
+    end
+
     def ==(other)
       other.is_a?(ObjectProperty) && type == other.type && required? == other.required? && description == other.description && example == other.example
     end
