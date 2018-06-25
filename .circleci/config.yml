@@ -80,8 +80,8 @@ jobs:
           command: |
             cd healthcheck
             bundle exec ruby api.rb
-            # cd -
-            # bundle exec ruby examples/evolution/api.rb
+            cd -
+            bundle exec ruby examples/evolution/api.rb
 
   healthcheck-current:
     docker:
