@@ -136,6 +136,8 @@ module Apigen
               array_schema(api, type)
             when Apigen::OptionalType
               raise 'Optional types are only supported within object types.'
+            when Apigen::OneofType
+              oneof_schema(api, type)
             when :string
               {
                 'type' => 'string'
@@ -174,6 +176,19 @@ module Apigen
               'type' => 'array',
               'items' => schema(api, array_type.type)
             }
+          end
+
+          def oneof_schema(_api, oneof_type)
+            schema = {
+              'oneOf' => oneof_type.mapping.keys.map { |model_name| { '$ref' => "#/components/schemas/#{model_name}" } }
+            }
+            if oneof_type.discriminator
+              schema['discriminator'] = {
+                'propertyName' => oneof_type.discriminator.to_s,
+                'mapping' => oneof_type.mapping.map { |model_name, disc_value| [disc_value, "#/components/schemas/#{model_name}"] }.to_h
+              }
+            end
+            schema
           end
         end
       end

@@ -2,6 +2,10 @@
 
 require_relative './model'
 require_relative './primary_types'
+require_relative './array_type'
+require_relative './object_type'
+require_relative './oneof_type'
+require_relative './optional_type'
 
 module Apigen
   ##
@@ -46,7 +50,7 @@ module Apigen
     private
 
     def complex_type?(type)
-      type.is_a?(ObjectType) || type.is_a?(ArrayType) || type.is_a?(OptionalType)
+      type.is_a?(ObjectType) || type.is_a?(ArrayType) || type.is_a?(OptionalType) || type.is_a?(OneofType)
     end
 
     def primary_type?(type)

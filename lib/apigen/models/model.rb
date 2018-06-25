@@ -3,6 +3,7 @@
 require_relative '../util'
 require_relative './array_type'
 require_relative './object_type'
+require_relative './oneof_type'
 require_relative './optional_type'
 require_relative './primary_types'
 require_relative './registry'
@@ -33,23 +34,31 @@ module Apigen
       else
         optional = false
       end
+      type = shape_to_type(shape, &block)
+      optional ? OptionalType.new(type) : type
+    end
+
+    private_class_method def self.shape_to_type(shape, &block)
       case shape
       when :object
         object = ObjectType.new
         object.instance_eval(&block)
-        type = object
+        object
       when :array
         array = ArrayType.new
         array.instance_eval(&block)
-        type = array
+        array
       when :optional
         optional = OptionalType.new
         optional.instance_eval(&block)
-        type = optional
+        optional
+      when :oneof
+        oneof = OneofType.new
+        oneof.instance_eval(&block)
+        oneof
       else
-        type = shape
+        shape
       end
-      optional ? OptionalType.new(type) : type
     end
 
     def validate(model_registry)

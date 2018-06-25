@@ -37,6 +37,8 @@ module Apigen
               array_schema(api, type)
             when Apigen::OptionalType
               raise 'Optional types are only supported within object types.'
+            when Apigen::OneofType
+              oneof_schema(api, type)
             when :string
               {
                 'type' => 'string'
@@ -74,6 +76,13 @@ module Apigen
             {
               'type' => 'array',
               'items' => schema(api, array_type.type)
+            }
+          end
+
+          def oneof_schema(_api, oneof_type)
+            # Note: discriminator is not supported by JSON Schema, so we skip it.
+            {
+              'oneOf' => oneof_type.mapping.keys.map { |model_name| { '$ref' => "#/definitions/#{model_name}" } }
             }
           end
         end
