@@ -60,6 +60,14 @@ module Apigen
       def migrate(*migration_classes)
         migration_classes.each { |klass| klass.new(self).up }
       end
+
+      def to_s
+        repr = "Endpoints:\n\n"
+        repr += @endpoints.map(&:to_s).join "\n"
+        repr += "\nTypes:\n\n"
+        repr += @model_registry.to_s
+        repr
+      end
     end
   end
 end

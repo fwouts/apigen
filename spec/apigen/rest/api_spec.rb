@@ -210,6 +210,23 @@ RSpec.describe Apigen::Rest do
     end.to raise_error 'Model :missing is not defined.'
   end
 
+  it 'rejects unnecessary block for unparameterised path' do
+    expect do
+      Apigen::Rest.api do
+        endpoint :get_user do
+          method :get
+          path '/user' do
+            id :string
+          end
+          output :success do
+            status 200
+            type :string
+          end
+        end
+      end
+    end.to raise_error 'A path block was provided but no URL parameter was found.'
+  end
+
   it 'requires all path parameters to be typed' do
     expect do
       Apigen::Rest.api do
@@ -258,5 +275,58 @@ RSpec.describe Apigen::Rest do
         end
       end
     end.to raise_error 'Model :missing is not defined.'
+  end
+
+  describe '#to_s' do
+    it 'generates a reasonable output' do
+      api = Apigen::Rest.api do
+        endpoint :get_user do
+          method :get
+          path '/users/{id}' do
+            id :string
+          end
+          output :success do
+            status 200
+            type :user
+          end
+        end
+
+        endpoint :create_user do
+          method :post
+          path '/users'
+          input do
+            type :object do
+              name :string
+            end
+          end
+          output :success do
+            status 200
+            type :user
+          end
+        end
+
+        model :user do
+          type :object do
+            name :string
+          end
+        end
+      end
+
+      expect(api.to_s).to eq "Endpoints:
+
+get_user:
+-> success 200 user
+
+create_user: {
+  name: string
+}
+-> success 200 user
+
+Types:
+
+user: {
+  name: string
+}"
+    end
   end
 end

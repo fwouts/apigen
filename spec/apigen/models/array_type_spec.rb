@@ -26,8 +26,17 @@ RSpec.describe Apigen::ArrayType do
 
   describe '#to_s' do
     it 'generates a reasonable output' do
-      type = Apigen::ArrayType.new(:string)
+      type = Apigen::ArrayType.new
+      type.type :string
       expect(type.to_s).to eq 'ArrayType<string>'
+
+      type = Apigen::ArrayType.new
+      type.type :object do
+        name :string
+      end
+      expect(type.to_s).to eq 'ArrayType<{
+  name: string
+}>'
     end
   end
 end
