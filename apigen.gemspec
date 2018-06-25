@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name        = 'apigen'
-  s.version     = '0.0.9'
+  s.version     = '0.0.10'
   s.date        = Time.now.strftime('%Y-%m-%d')
   s.summary     = 'OpenAPI spec generator'
   s.description = 'A simple DSL to generate OpenAPI and/or JSON Schema definitions in Ruby.'
