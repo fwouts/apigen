@@ -48,16 +48,23 @@ describe Apigen::Formats::Swagger::V2 do
               '200':
                 description: Success
                 schema:
-                  type: array
-                  items:
-                    oneOf:
-                    - "$ref": "#/definitions/user"
-                    - "$ref": "#/definitions/admin"
-                    discriminator:
-                      propertyName: type
-                      mapping:
-                        User: "#/definitions/user"
-                        Admin: "#/definitions/admin"
+                  type: object
+                  properties:
+                    list:
+                      type: array
+                      items:
+                        oneOf:
+                        - "$ref": "#/definitions/user"
+                        - "$ref": "#/definitions/admin"
+                        discriminator:
+                          propertyName: type
+                          mapping:
+                            User: "#/definitions/user"
+                            Admin: "#/definitions/admin"
+                    next:
+                      type: string
+                  required:
+                  - list
             description: Returns a list of users
           post:
             parameters:
