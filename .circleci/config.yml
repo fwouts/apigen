@@ -81,7 +81,8 @@ jobs:
             cd healthcheck
             ruby api.rb
             cd -
-            ruby examples/evolution/api.rb
+            ruby examples/evolution/api.rb > /tmp/generated.yaml
+            cmp /tmp/generated.yaml examples/evolution/golden.yaml
 
   healthcheck-current:
     docker:
@@ -98,7 +99,8 @@ jobs:
             cd healthcheck
             ruby api.rb
             cd -
-            ruby examples/evolution/api.rb
+            ruby examples/evolution/api.rb > /tmp/generated.yaml
+            cmp /tmp/generated.yaml examples/evolution/golden.yaml
 
 workflows:
   version: 2
