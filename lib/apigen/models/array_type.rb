@@ -14,7 +14,7 @@ module Apigen
     end
 
     def validate(model_registry)
-      raise 'Use `type [typename]` to specify the type of types in an array.' unless @type
+      raise 'Use `type [typename]` to specify the type of items in an array.' unless @type
       model_registry.check_type @type
     end
 

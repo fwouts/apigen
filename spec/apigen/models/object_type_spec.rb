@@ -93,7 +93,7 @@ RSpec.describe Apigen::ObjectType do
         age :int32?
       end
 
-      allow(model_registry).to receive(:check_type).with(anything).and_return(true)
+      allow(model_registry).to receive(:check_type).with(anything)
 
       type.validate(model_registry)
     end
@@ -106,12 +106,28 @@ RSpec.describe Apigen::ObjectType do
         age :int32?
       end
 
-      allow(model_registry).to receive(:check_type).with(anything).and_return(true)
+      allow(model_registry).to receive(:check_type).with(anything)
       allow(model_registry).to receive(:check_type).with(Apigen::PrimaryType.new(:int32)).and_raise('Error')
 
       expect do
         type.validate(model_registry)
       end.to raise_error('Error')
+    end
+  end
+
+  describe '#to_s' do
+    it 'generates a reasonable output' do
+      type = Apigen::ObjectType.new
+      type.add do
+        first_name :string
+        last_name :string
+        age :int32?
+      end
+      expect(type.to_s).to eq "{
+  first_name: string
+  last_name: string
+  age: int32?
+}"
     end
   end
 end

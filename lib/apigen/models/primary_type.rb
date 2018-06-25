@@ -8,8 +8,8 @@ module Apigen
   class PrimaryType
     PRIMARY_TYPES = Set.new %i[string int32 bool void]
 
-    def self.primary?(type)
-      PRIMARY_TYPES.include? type
+    def self.primary?(shape)
+      PRIMARY_TYPES.include? shape
     end
 
     attr_reader :shape
@@ -24,6 +24,10 @@ module Apigen
 
     def ==(other)
       other.is_a?(PrimaryType) && other.shape == shape
+    end
+
+    def to_s
+      @shape.to_s
     end
   end
 end
