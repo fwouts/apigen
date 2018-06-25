@@ -11,6 +11,16 @@ describe Apigen::Formats::JsonSchema::Draft7 do
       {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "definitions": {
+          "person": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/user"
+              },
+              {
+                "$ref": "#/definitions/admin"
+              }
+            ]
+          },
           "user": {
             "type": "object",
             "properties": {
@@ -49,6 +59,18 @@ describe Apigen::Formats::JsonSchema::Draft7 do
               "name",
               "avatar_url"
             ]
+          },
+          "admin": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "description": "An admin"
           }
         }
       }

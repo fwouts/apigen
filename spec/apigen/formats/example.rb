@@ -26,7 +26,13 @@ module Apigen
         description 'Success'
         status 200
         type :array do
-          type :user
+          type :oneof do
+            discriminator :type
+            map(
+              user: 'User',
+              admin: 'Admin'
+            )
+          end
         end
       end
     end
@@ -103,6 +109,16 @@ module Apigen
       end
     end
 
+    api.model :person do
+      type :oneof do
+        discriminator :type
+        map(
+          user: 'User',
+          admin: 'Admin'
+        )
+      end
+    end
+
     api.model :user do
       description 'A user'
       example(
@@ -122,6 +138,13 @@ module Apigen
       type :object do
         name :string
         avatar_url :string
+      end
+    end
+
+    api.model :admin do
+      description 'An admin'
+      type :object do
+        name :string
       end
     end
 

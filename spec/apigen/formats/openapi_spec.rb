@@ -46,7 +46,14 @@ describe Apigen::Formats::OpenAPI::V3 do
                     schema:
                       type: array
                       items:
-                        "$ref": "#/components/schemas/user"
+                        oneOf:
+                        - "$ref": "#/components/schemas/user"
+                        - "$ref": "#/components/schemas/admin"
+                        discriminator:
+                          propertyName: type
+                          mapping:
+                            User: "#/components/schemas/user"
+                            Admin: "#/components/schemas/admin"
             description: Returns a list of users
           post:
             operationId: create_user
@@ -148,6 +155,15 @@ describe Apigen::Formats::OpenAPI::V3 do
                       type: string
       components:
         schemas:
+          person:
+            oneOf:
+            - "$ref": "#/components/schemas/user"
+            - "$ref": "#/components/schemas/admin"
+            discriminator:
+              propertyName: type
+              mapping:
+                User: "#/components/schemas/user"
+                Admin: "#/components/schemas/admin"
           user:
             type: object
             properties:
@@ -175,6 +191,14 @@ describe Apigen::Formats::OpenAPI::V3 do
             required:
             - name
             - avatar_url
+          admin:
+            type: object
+            properties:
+              name:
+                type: string
+            required:
+            - name
+            description: An admin
     YAML
   end
 end

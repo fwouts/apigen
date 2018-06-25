@@ -48,7 +48,14 @@ describe Apigen::Formats::Swagger::V2 do
                 schema:
                   type: array
                   items:
-                    "$ref": "#/definitions/user"
+                    oneOf:
+                    - "$ref": "#/definitions/user"
+                    - "$ref": "#/definitions/admin"
+                    discriminator:
+                      propertyName: type
+                      mapping:
+                        User: "#/definitions/user"
+                        Admin: "#/definitions/admin"
             description: Returns a list of users
           post:
             parameters:
@@ -132,6 +139,15 @@ describe Apigen::Formats::Swagger::V2 do
                 schema:
                   type: string
       definitions:
+        person:
+          oneOf:
+          - "$ref": "#/definitions/user"
+          - "$ref": "#/definitions/admin"
+          discriminator:
+            propertyName: type
+            mapping:
+              User: "#/definitions/user"
+              Admin: "#/definitions/admin"
         user:
           type: object
           properties:
@@ -159,6 +175,14 @@ describe Apigen::Formats::Swagger::V2 do
           required:
           - name
           - avatar_url
+        admin:
+          type: object
+          properties:
+            name:
+              type: string
+          required:
+          - name
+          description: An admin
     YAML
   end
 end
