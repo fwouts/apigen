@@ -32,12 +32,14 @@ describe Apigen::Formats::OpenAPI::V3 do
               schema:
                 type: boolean
               description: Whether to include administrators or not
+              example: false
             - in: query
               name: order
               required: false
               schema:
                 type: string
               description: A sorting order
+              example: name ASC
             responses:
               '200':
                 description: Success
@@ -97,6 +99,10 @@ describe Apigen::Formats::OpenAPI::V3 do
                     - email
                     - password
                     - captcha
+              example:
+                name: John
+                email: johnny@apple.com
+                password: foobar123
         "/users/{id}":
           put:
             operationId: update_user

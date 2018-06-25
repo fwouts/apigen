@@ -24,17 +24,8 @@ module Apigen
     end
 
     # rubocop:disable Style/MethodMissingSuper
-    def method_missing(property_name, *args, &block)
+    def method_missing(property_name, property_type, property_description = nil, property_example = nil, &block)
       raise "Property :#{property_name} is defined multiple times." if @properties.key? property_name
-      property_type = args[0]
-      property_description = args[1]
-      block_called = false
-      if block_given?
-        block_wrapper = lambda do
-          block_called = true
-          yield
-        end
-      end
       if property_type.to_s.end_with? '?'
         property_type = property_type[0..-2].to_sym
         required = false
@@ -42,10 +33,10 @@ module Apigen
         required = true
       end
       property = ObjectProperty.new(
-        Apigen::Model.type(property_type, &block_wrapper),
-        property_description
+        Apigen::Model.type(property_type, &block),
+        property_description,
+        property_example
       )
-      property.instance_eval(&block) if block_given? && !block_called
       property.required = required
       @properties[property_name] = property
     end
@@ -68,7 +59,7 @@ module Apigen
     def repr(indent)
       repr = '{'
       @properties.each do |key, property|
-        repr += "\n#{indent}  #{property_repr(key, property)}"
+        repr += "\n#{indent}  #{property_repr(indent, key, property)}"
       end
       repr += "\n#{indent}}"
       repr
@@ -76,7 +67,7 @@ module Apigen
 
     private
 
-    def property_repr(key, property)
+    def property_repr(indent, key, property)
       type_repr = if property.type.respond_to? :repr
                     property.type.repr(indent + '  ')
                   else

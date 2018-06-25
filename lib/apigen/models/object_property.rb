@@ -11,9 +11,10 @@ module Apigen
     attribute_setter_getter :description
     attribute_setter_getter :example
 
-    def initialize(type, description = nil)
+    def initialize(type, description = nil, example = nil)
       @type = type
       @description = description
+      @example = example
       @required = true
     end
 
