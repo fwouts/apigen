@@ -72,15 +72,12 @@ jobs:
       - run:
           name: install latest published version of apigen
           command: |
-            cd healthcheck
             gem install apigen
 
       - run: &health-check
           name: run health check
           command: |
-            cd healthcheck
-            ruby api.rb
-            cd -
+            ruby healthcheck/api.rb
             mkdir /tmp/generated
             ruby examples/evolution/api.rb > /tmp/generated/evolution.yaml
             cmp /tmp/generated/evolution.yaml examples/evolution/golden.yaml || (diff /tmp/generated/evolution.yaml examples/evolution/golden.yaml; exit 1)
