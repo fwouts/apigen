@@ -152,6 +152,14 @@ describe Apigen::Formats::Swagger::V2 do
                 schema:
                   type: string
       definitions:
+        admin:
+          type: object
+          properties:
+            name:
+              type: string
+          required:
+          - name
+          description: An admin
         person:
           oneOf:
           - "$ref": "#/definitions/user"
@@ -194,14 +202,6 @@ describe Apigen::Formats::Swagger::V2 do
           required:
           - name
           - avatar_url
-        admin:
-          type: object
-          properties:
-            name:
-              type: string
-          required:
-          - name
-          description: An admin
     YAML
   end
 

@@ -168,6 +168,14 @@ describe Apigen::Formats::OpenAPI::V3 do
                       type: string
       components:
         schemas:
+          admin:
+            type: object
+            properties:
+              name:
+                type: string
+            required:
+            - name
+            description: An admin
           person:
             oneOf:
             - "$ref": "#/components/schemas/user"
@@ -210,14 +218,6 @@ describe Apigen::Formats::OpenAPI::V3 do
             required:
             - name
             - avatar_url
-          admin:
-            type: object
-            properties:
-              name:
-                type: string
-            required:
-            - name
-            description: An admin
     YAML
   end
 
