@@ -9,11 +9,7 @@ module Apigen
       private
 
       def definitions(api)
-        hash = {}
-        api.models.each do |key, model|
-          hash[key.to_s] = schema(api, model.type, model.description, model.example)
-        end
-        hash
+        api.models.values.sort_by(&:name).map { |model| [model.name.to_s, schema(api, model.type, model.description, model.example)] }.to_h
       end
 
       def schema(api, type, description = nil, example = nil)

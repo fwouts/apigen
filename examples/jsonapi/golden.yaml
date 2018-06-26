@@ -1,0 +1,227 @@
+---
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: API
+  description: ''
+  termsOfService: ''
+  contact:
+    name: ''
+  license:
+    name: ''
+servers:
+- url: http://localhost
+paths:
+  "/articles":
+    get:
+      operationId: list_articles
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        "$ref": "#/components/schemas/link"
+                      next:
+                        "$ref": "#/components/schemas/link"
+                      last:
+                        "$ref": "#/components/schemas/link"
+                    required:
+                    - self
+                    - next
+                    - last
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/article"
+                  included:
+                    type: array
+                    items:
+                      oneOf:
+                      - "$ref": "#/components/schemas/person"
+                      - "$ref": "#/components/schemas/comment"
+                      discriminator:
+                        propertyName: type
+                        mapping:
+                          people: "#/components/schemas/person"
+                          comments: "#/components/schemas/comment"
+                required:
+                - links
+                - data
+                - included
+components:
+  schemas:
+    article:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - articles
+        id:
+          type: string
+        attributes:
+          type: object
+          properties:
+            title:
+              type: string
+          required:
+          - title
+        relationships:
+          type: object
+          properties:
+            author:
+              type: object
+              properties:
+                links:
+                  type: object
+                  properties:
+                    self:
+                      "$ref": "#/components/schemas/link"
+                    related:
+                      "$ref": "#/components/schemas/link"
+                  required:
+                  - self
+                  - related
+                data:
+                  "$ref": "#/components/schemas/entity_reference"
+              required:
+              - links
+              - data
+            comments:
+              type: object
+              properties:
+                links:
+                  type: object
+                  properties:
+                    self:
+                      "$ref": "#/components/schemas/link"
+                    related:
+                      "$ref": "#/components/schemas/link"
+                  required:
+                  - self
+                  - related
+                data:
+                  type: array
+                  items:
+                    "$ref": "#/components/schemas/entity_reference"
+              required:
+              - links
+              - data
+          required:
+          - author
+          - comments
+        links:
+          type: object
+          properties:
+            self:
+              "$ref": "#/components/schemas/link"
+          required:
+          - self
+      required:
+      - type
+      - id
+      - attributes
+      - relationships
+      - links
+    comment:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - comments
+        id:
+          type: string
+        attributes:
+          type: object
+          properties:
+            body:
+              type: string
+          required:
+          - body
+        relationships:
+          type: object
+          properties:
+            author:
+              type: object
+              properties:
+                data:
+                  "$ref": "#/components/schemas/entity_reference"
+              required:
+              - data
+          required:
+          - author
+        links:
+          type: object
+          properties:
+            self:
+              "$ref": "#/components/schemas/link"
+          required:
+          - self
+      required:
+      - type
+      - id
+      - attributes
+      - relationships
+      - links
+      description: A comment.
+    entity_reference:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - articles
+          - comments
+          - people
+        id:
+          type: string
+      required:
+      - type
+      - id
+      description: A reference to an entity.
+    link:
+      type: string
+      description: A link to another API endpoint.
+    person:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - people
+        id:
+          type: string
+        attributes:
+          type: object
+          properties:
+            first-name:
+              type: string
+            last-name:
+              type: string
+            twitter:
+              type: string
+          required:
+          - first-name
+          - last-name
+          - twitter
+        links:
+          type: object
+          properties:
+            self:
+              "$ref": "#/components/schemas/link"
+          required:
+          - self
+      required:
+      - type
+      - id
+      - attributes
+      - links
+      description: A person.

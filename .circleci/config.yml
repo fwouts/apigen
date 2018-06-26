@@ -70,19 +70,22 @@ jobs:
       - checkout
 
       - run:
-          name: install dependencies
+          name: install latest published version of apigen
           command: |
             cd healthcheck
             gem install apigen
 
-      - run:
-          name: run health check with latest published gem
+      - run: &health-check
+          name: run health check
           command: |
             cd healthcheck
             ruby api.rb
             cd -
-            ruby examples/evolution/api.rb > /tmp/generated.yaml
-            cmp /tmp/generated.yaml examples/evolution/golden.yaml
+            mkdir /tmp/generated
+            ruby examples/evolution/api.rb > /tmp/generated/evolution.yaml
+            cmp /tmp/generated/evolution.yaml examples/evolution/golden.yaml || (diff /tmp/generated/evolution.yaml examples/evolution/golden.yaml; exit 1)
+            ruby examples/jsonapi/api.rb > /tmp/generated/jsonapi.yaml
+            cmp /tmp/generated/jsonapi.yaml examples/jsonapi/golden.yaml || (diff /tmp/generated/jsonapi.yaml examples/jsonapi/golden.yaml; exit 1)
 
   healthcheck-current:
     docker:
@@ -92,15 +95,12 @@ jobs:
       - checkout
 
       - run:
-          name: run health check with new build of gem
+          name: install dependencies
           command: |
             gem build apigen.gemspec
             gem install apigen-*.gem
-            cd healthcheck
-            ruby api.rb
-            cd -
-            ruby examples/evolution/api.rb > /tmp/generated.yaml
-            cmp /tmp/generated.yaml examples/evolution/golden.yaml
+
+      - run: *health-check
 
 workflows:
   version: 2
