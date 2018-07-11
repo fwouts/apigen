@@ -63,6 +63,7 @@ module Apigen
 
       def migrate(*migration_classes)
         migration_classes.each { |klass| klass.new(self).up }
+        validate
       end
 
       def to_s
