@@ -79,8 +79,10 @@ jobs:
           command: |
             ruby healthcheck/api.rb
             mkdir /tmp/generated
-            ruby examples/evolution/api.rb > /tmp/generated/evolution.yaml
-            cmp /tmp/generated/evolution.yaml examples/evolution/golden.yaml || (diff /tmp/generated/evolution.yaml examples/evolution/golden.yaml; exit 1)
+            ruby examples/evolution/dev.rb > /tmp/generated/evolution-dev.yaml
+            cmp /tmp/generated/evolution-dev.yaml examples/evolution/golden-dev.yaml || (diff /tmp/generated/evolution-dev.yaml examples/evolution/golden-dev.yaml; exit 1)
+            ruby examples/evolution/prod.rb > /tmp/generated/evolution-prod.yaml
+            cmp /tmp/generated/evolution-prod.yaml examples/evolution/golden-prod.yaml || (diff /tmp/generated/evolution-prod.yaml examples/evolution/golden-prod.yaml; exit 1)
             ruby examples/jsonapi/api.rb > /tmp/generated/jsonapi.yaml
             cmp /tmp/generated/jsonapi.yaml examples/jsonapi/golden.yaml || (diff /tmp/generated/jsonapi.yaml examples/jsonapi/golden.yaml; exit 1)
 
