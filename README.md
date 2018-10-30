@@ -1,3 +1,10 @@
+# Superseded by [@zenclabs/api, a more type-safe approach](https://github.com/zenclabs/api)
+
+TypeScript turned out to be a better choice for an API definition DSL with autocomplete and instant validation.
+
+-----
+
+
 # Swagger, OpenAPI and JSON Schema definition generator
 
 [![CircleCI](https://circleci.com/gh/zenclabs/apigen.svg?style=svg)](https://circleci.com/gh/zenclabs/apigen)
